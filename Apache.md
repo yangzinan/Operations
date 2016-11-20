@@ -244,3 +244,19 @@ root@template /usr/local/apache/conf/extra 17:34:27 # /usr/local/apache/bin/apac
 cd /usr/local/daguanren
 echo "Hello World" > index.html
 ```
+##### 6.修改windows主机的hosts文件进行测试
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/apache/03.png?raw=true)
+`出现403权限拒绝解决办法：`
+`打开主配置文件添加目录的权限`
+```conf
+<Directory "/usr/local/daguanren "> #设置目录块权限（虚拟主机的根目录及index.html的文件目录）
+    Options Indexes FollowSymLinks 
+#表示禁止符号连接，Indexes表示允许目录浏览应删除（修改后Options#FollowSymLinks）
+    AllowOverride None
+#表示用户禁止对目录配置文件（.htaccess）重载 
+    Order allow,deny
+#一deny方式优先处理，没有明确说明拒绝的话都通过 
+    Allow from all   #apache2.4 版本为Require all granted
+#允许所有访问 此处是web服务必须开启
+</Directory>
+```
