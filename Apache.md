@@ -122,4 +122,5 @@ httpd   110055 daemon    4u  IPv6 100734      0t0  TCP *:http (LISTEN)
 httpd   110056 daemon    4u  IPv6 100734      0t0  TCP *:http (LISTEN)
 ```
 客户端使用浏览器检查
+
 ![image] (https://github.com/yangzinan/Operations/blob/master/iamge/apache/02.png?raw=true)
