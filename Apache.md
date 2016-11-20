@@ -279,3 +279,7 @@ Syntax OK
 root@template /usr/local/daguanren 17:46:09 # /usr/local/apache/bin/apachectl graceful
 ```
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/03.png?raw=true)
+访问成功
+### 5.2.2基于端口的虚拟主机
+#### 1.修改主配置文件添加一个监听端口（httpd.conf）
+![image]()
