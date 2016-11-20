@@ -246,6 +246,7 @@ echo "Hello World" > index.html
 ```
 ##### 6.修改windows主机的hosts文件进行测试
 ![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/apache/03.png?raw=true)
+
 `出现403权限拒绝解决办法：`
 `打开主配置文件添加目录的权限`
 ```conf
@@ -260,3 +261,21 @@ echo "Hello World" > index.html
 #允许所有访问 此处是web服务必须开启
 </Directory>
 ```
+`可以使用如下命令快速执行`
+```shell
+cat>>/usr/local/apache/conf/httpd.conf<<EOF
+<Directory "/usr/local/daguanren"> 
+    Options Indexes FollowSymLinks 
+    AllowOverride None
+    Order allow,deny
+    Allow from all  
+</Directory>
+EOF
+```
+`再次检测语法并重启`
+```shell
+root@template /usr/local/daguanren 17:46:05 # /usr/local/apache/bin/apachectl -t
+Syntax OK
+root@template /usr/local/daguanren 17:46:09 # /usr/local/apache/bin/apachectl graceful
+```
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/03.png?raw=true)
