@@ -376,4 +376,56 @@ root@template /usr/local/apache/conf 19:43:11 # /usr/local/apache/bin/apachectl 
 #### 6.1.5通过浏览器查看配置效果
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/08.png?raw=true)
 可以看到缓存到2017年
-
+### 6.2mod_deflate模块（压缩发送）
+#### 6.2.1检查模块是否安装
+```shell
+root@template /usr/local/apache/conf 20:20:45 # /usr/local/apache/bin/apachectl -M | grep deflate
+ deflate_module (static)
+Syntax OK
+#以上是显示静态安装结果
+root@template /usr/local/apache/conf 20:20:45 # /usr/local/apache/bin/apachectl -M | grep deflate
+ deflate_module (shared)
+Syntax OK
+#以上是动态安装结果
+```
+#### 6.2.2手动安装
+```shell
+/usr/local/apache/bin/apxs -c -i -a mod_deflate.c
+注：mod_expires.c文件在apache安装包的/modules/filters/下
+注：如果我们是编译安装时已经编译进去的需要在住配置文件（httpd.conf）中解除注释如下行
+LoadModule deflate_module modules/deflate_module.so
+sed -i 's#\#LoadModule deflate_module modules/mod_deflate.so#LoadModule deflate_module modules/mod_deflate.so#g' /usr/local/apache/conf/httpd.conf                
+注：若出现错误undefined symbol: inflateEnd请在LoadModule expires_module
+modules/mod_expires.so前面加上
+LoadFile /usr/lib64/libz.so
+```
+6.2.3配置压缩（写在主配置文件即可）
+```conf
+<ifmodule mod_deflate.c> 
+DeflateCompressionLevel 9      #压缩等级，越大效率越高，消耗CPU也越高 
+SetOutputFilter DEFLATE           #启用压缩 
+DeflateFilterNote Input instream #声明输入流的byte数量 
+DeflateFilterNote Output outstream  #声明输出流的byte数量 
+DeflateFilterNote Ratio ratio   #声明压缩的百分比 
+AddOutputFilterByType DEFLATE text/html text/plain text/xml     
+AddOutputFilterByType DEFLATE application/javascript
+AddOutputFilterByType DEFLATE text/css
+#声明压缩的文件格式
+AddOutputFilterByType DEFLATE image/gif image/png  image/jpe image/swf image/jpeg image/bmp
+#DeflateFilterNote ratio     #在日志中放置压缩率标记，下面是记录日志的，这个功能一般不用 
+#LogFormat '"%r" %{outstream}n/%{instream}n (%{ratio}n%%)' deflate 
+#CustmLog logs/deflate_log.log deflate 
+</ifmodule>
+```
+#### 6.2.4查看无压缩的返回
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/09.png?raw=true)
+无压缩
+#### 6.2.5检查语法重启apache
+```shell
+root@template /usr/local/apache/conf 20:30:19 # /usr/local/apache/bin/apachectl -t
+Syntax OK
+root@template /usr/local/apache/conf 20:31:12 # /usr/local/apache/bin/apachectl graceful
+```
+#### 6.2.6查看压缩结果
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/10.png?raw=true)
+发现已有gzip
