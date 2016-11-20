@@ -27,7 +27,7 @@ Apache是世界使用排名第一的Web服务器软件。它可以运行在几�
 `注：一般生产环境不建议使用yum安装apache软件，主要因为yum安装不可以选择apache的版本,和定制化安装。`
 
 ### 4.2编译安装apache
-1. 首先安装apache的依赖apr
+#### 4.2.1首先安装apache的依赖apr
 ```shell
 tar -zxf apr-1.4.5.tar.gz
 cd apr-1.4.5
@@ -35,7 +35,7 @@ cd apr-1.4.5
 make && make install
 cd ..
 ```
-2. 安装apr-util
+#### 4.2.2安装apr-util
 ```shell
 tar -zxf apr-util-1.3.12.tar.gz
 cd apr-util-1.3.12
@@ -43,7 +43,7 @@ cd apr-util-1.3.12
 make && make install
 cd ..
 ```
-3. 安装pcre
+#### 4.2.3安装pcre
 ```shell
 unzip -o pcre-8.10.zip
 cd pcre-8.10
@@ -51,11 +51,11 @@ cd pcre-8.10
 make && make install
 cd ..
 ```
-4. 安装其他依赖
+#### 4.2.4安装其他依赖
 ```shell
 yum install –y zlib zlib-devel openssl openssl-devel
 ```
-5. 编译安装apache
+#### 4.2.5编译安装apache
 ```shell
 tar zxf httpd-2.2.31.tar.gz
 cd httpd-2.2.31
@@ -78,23 +78,23 @@ cd httpd-2.2.31
 --with-included-apr
 make && make install
 ```
-6. 启动apache并通过命令验证
+#### 4.2.6启动apache并通过命令验证
 ```shell
 /usr/local/apache/bin/apachectl –t  #检查apache配置文件的语法
 ```
 
-如果出现以下报警（并不影响使用）
+##### 如果出现以下报警（并不影响使用）
 
 ![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/apache/01.png?raw=true)
-解决办法：
+##### 解决办法：
 > * 打开配置文件（httpd.conf）在安装目录下的conf目录下（本例在/usr/local/apache/conf下）
 > * 修改ServerName打开注释并将ServerName改为localhost
 
-启动apache
+##### 启动apache
 ```shell
 /usr/local/apache/bin/apachectl start
 ```
-验证80端口是否启动
+##### 验证80端口是否启动
 ```shell
 root@template /usr/local/apache/conf 16:53:10 # netstat -ntlup
 Active Internet connections (only servers)
@@ -103,7 +103,7 @@ tcp        0      0 0.0.0.0:22                  0.0.0.0:*                   LIST
 tcp        0      0 127.0.0.1:25                0.0.0.0:*                   LISTEN      1216/master         
 tcp        0      0 :::80                       :::*                        LISTEN      110052/httpd   
 ```
-验证apache进程是否启动
+##### 验证apache进程是否启动
 ```shell
 root@template /usr/local/apache/conf 16:54:47 # ps -ef | grep httpd | grep -v grep
 root     110052      1  0 16:49 ?        00:00:00 /usr/local/apach-2.2.31/bin/httpd -k start
@@ -112,7 +112,7 @@ daemon   110054 110052  0 16:49 ?        00:00:00 /usr/local/apach-2.2.31/bin/ht
 daemon   110055 110052  0 16:49 ?        00:00:00 /usr/local/apach-2.2.31/bin/httpd -k start
 daemon   110056 110052  0 16:49 ?        00:00:00 /usr/local/apach-2.2.31/bin/httpd -k start
 ```
-通过端口反查进程
+##### 通过端口反查进程
 ```shell
 root@template /usr/local/apache/conf 16:56:28 # lsof -i:80
 COMMAND    PID   USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
@@ -121,6 +121,6 @@ httpd   110054 daemon    4u  IPv6 100734      0t0  TCP *:http (LISTEN)
 httpd   110055 daemon    4u  IPv6 100734      0t0  TCP *:http (LISTEN)
 httpd   110056 daemon    4u  IPv6 100734      0t0  TCP *:http (LISTEN)
 ```
-客户端使用浏览器检查
+##### 客户端使用浏览器检查
 
 ![image] (https://github.com/yangzinan/Operations/blob/master/iamge/apache/02.png?raw=true)
