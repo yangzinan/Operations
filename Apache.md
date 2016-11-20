@@ -278,8 +278,55 @@ root@template /usr/local/daguanren 17:46:05 # /usr/local/apache/bin/apachectl -t
 Syntax OK
 root@template /usr/local/daguanren 17:46:09 # /usr/local/apache/bin/apachectl graceful
 ```
-![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/03.png?raw=true)
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/04.png?raw=true)
 访问成功
 ### 5.2.2基于端口的虚拟主机
 #### 1.修改主配置文件添加一个监听端口（httpd.conf）
-![image]()
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/05.png?raw=true)
+#### 2.修改主配置文件添加虚拟主机host
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/06.png?raw=true)
+#### 3.修改httpd-vhosts.conf添加一个基于端口的虚拟主机
+```shell
+cat>>/usr/local/apache/conf/extra/httpd-vhosts.con<<EOF
+<VirtualHost *:8080>
+    	ServerAdmin admin@your-domain.com
+    	DocumentRoot "/usr/local/port"
+    	ServerName www.daguanren.com
+    	ServerAlias www.dummy-host.example.com
+    	ErrorLog "logs/port.com-error_log"
+    	CustomLog "logs/port-access_log" common
+</VirtualHost>
+EOF
+```
+#### 4.在主配置文件添加目录权限并写一个测试文件
+```shell
+cat>>/usr/local/apache/conf/httpd.conf<<EOF
+<Directory "/usr/local/port"> 
+    	Options Indexes FollowSymLinks 
+    	AllowOverride None
+   	Order allow,deny
+    	Allow from all  
+</Directory>
+EOF
+echo "port:8080" > /usr/local/port/index.html
+```
+#### 5.检测语法重启apache
+```shell
+root@template /usr/local/apache/conf 18:59:06 # /usr/local/apache/bin/apachectl -t           
+Syntax OK
+root@template /usr/local/apache/conf 18:59:15 # /usr/local/apache/bin/apachectl graceful
+```
+#### 6.查看端口
+```shell
+root@template /usr/local/apache/conf 19:07:48 # netstat -ntlup 
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address               Foreign Address             State       PID/Program name   
+tcp        0      0 0.0.0.0:22                  0.0.0.0:*                   LISTEN      1140/sshd           
+tcp        0      0 127.0.0.1:25                0.0.0.0:*                   LISTEN      1216/master         
+tcp        0      0 :::8080                     :::*                        LISTEN      110052/httpd        8080端口已经开始监听
+tcp        0      0 :::80                       :::*                        LISTEN      110052/httpd        
+tcp        0      0 :::22                       :::*                        LISTEN      1140/sshd           
+tcp        0      0 ::1:25                      :::*                        LISTEN      1216/master
+```
+#### 7.通过浏览器查看
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/07.png?raw=true)
