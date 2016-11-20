@@ -124,3 +124,123 @@ httpd   110056 daemon    4u  IPv6 100734      0t0  TCP *:http (LISTEN)
 ##### 客户端使用浏览器检查
 
 ![image] (https://github.com/yangzinan/Operations/blob/master/iamge/apache/02.png?raw=true)
+## 五.APACHE配置详解
+### 5.1apache主配置文件重要参数
+```conf
+ServerRoot "/usr/local/ apach-2.2.31"  #Apache的安装目录
+    Listen 80  #监听80端口（可以写成多个端口--多行。ip:端口的形式）
+    User daemon  #Apache的默认用户名（建议修改）
+    Group daemon  #Apache的默认用户组（建议修改）
+    ServerAdmin you@example.com  #系统管理员邮箱 
+    DocumentRoot "/usr/local/ apach-2.2.31/htdocs"  #Apache默认web站点的路径末尾不要添加/
+    <Directory />  #禁止访问文件系统所在的目录，并添加你希望允许访问的模块目录
+       Options FollowSymLinks  #表示允许使用符号连接
+       AllowOverride None  #表示用户禁止对目录配置文件（.htaccess）重载
+       Order deny,allow  #一deny方式优先处理，没有明确说明拒绝的话都通过
+       Deny from all  #明确指出拒绝所有访问
+   </Directory>
+   <Directory "/usr/local/apache2.4.10/htdocs">  
+#设置/usr/local/ apach-2.2.31/htdocs目录块权限
+         Options Indexes FollowSymLinks 
+ #表示禁止符号连接，Indexes表示允许目录浏览应删除（修改后Options
+          #FollowSymLinks）
+         AllowOverride None   #表示用户禁止对目录配置文件（.htaccess）重载
+         Order allow,deny  #一deny方式优先处理，没有明确说明拒绝的话都通过
+         Allow from all  #允许所有访问 此处是web服务必须开启
+    </Directory>
+    <IfModule dir_module>
+         DirectoryIndex index.html  #Apache默认的主页配置多个以空格隔开
+    </IfModule>
+    <FilesMatch "^\.ht">  #防止.htaccess和htpasswd等隐藏文件被web用户看到
+         Order allow,deny
+         Deny from all
+         Satisfy All
+    </FilesMatch>
+    ErrorLog "logs/error_log"  #错误日志
+    <IfModule log_config_module>
+         LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined 
+ #访问日志格式
+         LogFormat "%h %l %u %t \"%r\" %>s %b" common  
+#普通访问日志格式
+        <IfModule logio_module>
+LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O" combinedio
+        </IfModule>
+             CustomLog "logs/access_log" common  #默认站点访问日志配置
+    </IfModule>
+    <IfModule alias_module>
+         ScriptAlias /cgi-bin/ "/usr/local/ apach-2.2.31/cgi-bin/"  #配置cgi别名
+    </IfModule>
+    <IfModule cgid_module>
+    </IfModule>
+    <Directory "/usr/local/ apach-2.2.31/cgi-bin">  #配置cgi访问路径
+         AllowOverride None
+         Options None
+         Order allow,deny
+         Allow from all
+    </Directory>
+          DefaultType text/plain 
+ #定义当前不能确定MIME时服务器提供的默认MIME类型，如果你的服务只要包括test或html文档
+          #text/plain是一个好的选择
+    <IfModule mime_module>
+         TypesConfig conf/mime.types
+         AddType application/x-compress .Z
+         AddType application/x-gzip .gz .tgz
+    </IfModule>
+    <IfModule ssl_module>
+```
+### 5.2配置apache的虚拟主机
+#### 5.2.1基于主机名的虚拟主机
+##### 1.首先要使用apache的虚拟主机功能必须引入虚拟主机的配置文件。在主配置文件解除注释如下：
+```shell
+sed	-i 's@#Includeconf/extra/httpd-vhosts.conf@Includeconf/extra/httpd-vhosts.conf@g' /usr/local/apache/conf/httpd.conf
+注：可以使用sed命令在非交互模式下快速修改，但是后面的文件路径需要读者根据自己的路径修改
+```
+##### 2.3)	修改虚拟主机的配置文件（httpd-vhosts.conf位于conf目录下的extra目录里面）
+```conf
+#
+# Virtual Hosts
+#
+# If you want to maintain multiple domains/hostnames on your
+# machine you can setup VirtualHost containers for them. Most configurations
+# use only name-based virtual hosts so the server doesn't need to worry about
+# IP addresses. This is indicated by the asterisks in the directives below.
+#
+# Please see the documentation at 
+# <URL:http://httpd.apache.org/docs/2.2/vhosts/>
+# for further details before you try to setup virtual hosts.
+#
+# You may use the command line option '-S' to verify your virtual host
+# configuration.
+
+#
+# Use name-based virtual hosting.
+#
+NameVirtualHost *:80
+
+#
+# VirtualHost example:
+# Almost any Apache directive may go into a VirtualHost container.
+# The first VirtualHost section is used for all requests that do not
+# match a ServerName or ServerAlias in any <VirtualHost> block.
+#
+<VirtualHost *:80>
+    ServerAdmin DaguanR@gmail.com   #管理员的邮箱
+    DocumentRoot "/usr/local/daguanren"   #当前虚拟主机的目录
+    ServerName www.daguanren.com      #当前虚拟主机的域名
+    ServerAlias www.dummy-host.example.com   #当前虚拟主机的别名
+    ErrorLog "logs/daguanren.com-error_log"  #当前虚拟主机的错误日志
+    CustomLog "logs/daguanren-access_log" common   #当前虚拟主机的访问日志
+</VirtualHost>
+```
+##### 4.检测语法重启apache
+```shell
+root@template /usr/local/apache/conf/extra 17:34:23 # /usr/local/apache/bin/apachectl -t      
+Syntax OK
+root@template /usr/local/apache/conf/extra 17:34:27 # /usr/local/apache/bin/apachectl graceful
+注：这里使用graceful而不是用stop再start，因为graceful是优雅的重启只是重新加载配置文件而不会影响正在访问的用户
+```
+##### 5.创建一个index.html文件方便测试
+```shell
+cd /usr/local/daguanren
+echo "Hello World" > index.html
+```
