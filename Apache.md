@@ -375,3 +375,5 @@ root@template /usr/local/apache/conf 19:43:11 # /usr/local/apache/bin/apachectl 
 ```
 #### 6.1.5通过浏览器查看配置效果
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/08.png?raw=true)
+可以看到缓存到2017年
+
