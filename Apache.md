@@ -280,12 +280,12 @@ root@template /usr/local/daguanren 17:46:09 # /usr/local/apache/bin/apachectl gr
 ```
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/04.png?raw=true)
 访问成功
-### 5.2.2基于端口的虚拟主机
-#### 1.修改主配置文件添加一个监听端口（httpd.conf）
+#### 5.2.2基于端口的虚拟主机
+##### 1.修改主配置文件添加一个监听端口（httpd.conf）
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/05.png?raw=true)
-#### 2.修改主配置文件添加虚拟主机host
+##### 2.修改主配置文件添加虚拟主机host
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/06.png?raw=true)
-#### 3.修改httpd-vhosts.conf添加一个基于端口的虚拟主机
+##### 3.修改httpd-vhosts.conf添加一个基于端口的虚拟主机
 ```shell
 cat>>/usr/local/apache/conf/extra/httpd-vhosts.con<<EOF
 <VirtualHost *:8080>
@@ -298,7 +298,7 @@ cat>>/usr/local/apache/conf/extra/httpd-vhosts.con<<EOF
 </VirtualHost>
 EOF
 ```
-#### 4.在主配置文件添加目录权限并写一个测试文件
+##### 4.在主配置文件添加目录权限并写一个测试文件
 ```shell
 cat>>/usr/local/apache/conf/httpd.conf<<EOF
 <Directory "/usr/local/port"> 
@@ -310,13 +310,13 @@ cat>>/usr/local/apache/conf/httpd.conf<<EOF
 EOF
 echo "port:8080" > /usr/local/port/index.html
 ```
-#### 5.检测语法重启apache
+##### 5.检测语法重启apache
 ```shell
 root@template /usr/local/apache/conf 18:59:06 # /usr/local/apache/bin/apachectl -t           
 Syntax OK
 root@template /usr/local/apache/conf 18:59:15 # /usr/local/apache/bin/apachectl graceful
 ```
-#### 6.查看端口
+##### 6.查看端口
 ```shell
 root@template /usr/local/apache/conf 19:07:48 # netstat -ntlup 
 Active Internet connections (only servers)
@@ -328,5 +328,5 @@ tcp        0      0 :::80                       :::*                        LIST
 tcp        0      0 :::22                       :::*                        LISTEN      1140/sshd           
 tcp        0      0 ::1:25                      :::*                        LISTEN      1216/master
 ```
-#### 7.通过浏览器查看
+##### 7.通过浏览器查看
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/07.png?raw=true)
