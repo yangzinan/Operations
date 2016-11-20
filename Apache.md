@@ -330,3 +330,48 @@ tcp        0      0 ::1:25                      :::*                        LIST
 ```
 ##### 7.通过浏览器查看
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/07.png?raw=true)
+## 六.APACHE模块
+### 6.1mod_expires模块（用于客户端浏览器允许使用缓存网页的图片等）
+#### 6.1.1检查模块是否安装
+```shell
+root@template /usr/local/apache/conf 19:07:55 # /usr/local/apache/bin/apachectl -M | grep expires
+ expires_module (static)
+Syntax OK
+#以上是显示静态安装结果
+root@template /usr/local/apache/conf 19:07:55 # /usr/local/apache/bin/apachectl -M | grep expires
+ expires_module (shared)
+Syntax OK
+#以上是动态安装结果
+```
+#### 6.1.2手动安装
+```shell
+/usr/local/apache/bin/apxs -c -i -a mod_expires.c
+注：mod_expires.c文件在apache安装包的modules/metadata/下
+注：如果我们是编译安装时已经编译进去的需要在住配置文件（httpd.conf）中解除注释如下行
+LoadModule expires_module modules/mod_expires.so
+sed -i 's#\#LoadModule mod_expires modules/mod_expires.so#LoadModule mod_expires modules/mod_expires.so#g' /usr/local/apache/conf/httpd.conf
+```
+#### 6.1.3配置缓存（写在主配置文件结尾即可)
+```conf
+ExpiresActive on 
+#开启缓存
+ExpiresDefault "access plus 12 month"
+ExpiresByType text/html "access plus 12 months"
+#压缩的文件为text和html文件 缓存时间为12个月
+ExpiresByType text/css "access plus 12 months"
+ExpiresByType image/gif "access plus 12 months"
+ExpiresByType image/jpeg "access plus12  12 months"
+ExpiresByType image/jpg "access plus 12 months"
+ExpiresByType image/png "access plus 12 months"
+EXpiresByType application/x-shockwave-flash "access plus 12 months"
+EXpiresByType application/x-javascript "access plus 12 months"
+ExpiresByType video/x-flv "access plus 12 months"
+```
+#### 6.1.4检查语法重启apache
+```shell
+root@template /usr/local/apache/conf 19:43:03 # /usr/local/apache/bin/apachectl -t      
+Syntax OK
+root@template /usr/local/apache/conf 19:43:11 # /usr/local/apache/bin/apachectl graceful
+```
+#### 6.1.5通过浏览器查看配置效果
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/08.png?raw=true)
