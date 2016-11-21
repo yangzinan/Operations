@@ -527,5 +527,63 @@ root@template /usr/local/apache/conf 21:49:08 # /usr/local/apache/bin/apachectl 
 Syntax OK
 root@template /usr/local/apache/conf 21:49:15 # /usr/local/apache/bin/apachectl graceful
 ```
-8.2.4通过浏览器使用https访问
+#### 8.2.4通过浏览器使用https访问
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/12.png?raw=true)
+注：https上面的红色差是代表我们的证书不被信任，因为证书是我们测试自己生成的。在正式生产环境我们会通过正式的证书机构获取证书
+## 九.APACHE PHP应用
+### 9.1php介绍
+PHP（外文名:PHP: Hypertext Preprocessor，中文名：“超文本预处理器”）是一种通用开源脚本语言。语法吸收了C语言、Java和Perl的特点，利于学习，使用广泛，主要适用于Web开发领域。PHP 独特的语法混合了C、Java、Perl以及PHP自创的语法。它可以比CGI或者Perl更快速地执行动态网页。用PHP做出的动态页面与其他的编程语言相比，PHP是将程序嵌入到HTML（标准通用标记语言下的一个应用）文档中去执行，执行效率比完全生成HTML标记的CGI要高许多；PHP还可以执行编译后代码，编译可以达到加密和优化代码运行，使代码运行更快。
+### 9.2安装php
+#### 9.2.1检查php安装环境
+```shell
+yum install –y zlib-devel libxml2-devel libjpeg-devel freetype-devel libpng-devel libxml2* libcurl* libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel xml2 xml2-devel libxslt-devel
+```
+#### 9.2.2安装libiconv
+```shell
+tar -zxf libiconv-1.14.tar.gz
+cd libiconv-1.14
+./configure --prefix=/usr/local/libiconv
+make
+make install
+cd ..
+```
+#### 9.2.3编译安装php5.5
+```shell
+tar -zxf php-5.5.20.tar.gz
+cd php-5.5.20
+./configure \
+--prefix=/usr/local/php5.5.20 \
+--enable-mysqlnd \
+--with-mysql=mysqlnd \
+--with-mysqli=mysqlnd \
+--with-pdo-mysql=mysqlnd \
+--enable-bcmath \
+--with-gettext \
+--with-xmlrpc \
+--with-openssl \
+--with-zlib \
+--with-freetype-dir \
+--with-gd \
+--with-jpeg-dir \
+--with-png-dir \
+--with-iconv=/usr/local/libiconv \
+--enable-short-tags \
+--enable-sockets \
+--enable-soap \
+--enable-mbstring \
+--enable-static \
+--enable-gd-native-ttf \
+--enable-zip \
+--with-curl \
+--with-xsl \
+--enable-ftp \
+--with-gettext \
+--enable-opcache \
+--with-libxml-dir
+ln -s /usr/local/php5.5.20 /usr/local/php
+cp php.ini-production /usr/local/php/lib/php.ini
+```
+#### 9.2.4配置apache解析php
+1. 添加主持.php后缀名
+
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/12.png?raw=true)
