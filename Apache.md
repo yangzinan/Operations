@@ -668,5 +668,50 @@ root@template /usr/local/daguanren 22:48:34 # /usr/local/apache/bin/apachectl st
 root@template /usr/local/daguanren 22:49:11 # /usr/local/apache/bin/apachectl start
 ```
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/18.png?raw=true)
+#### 9.3.3redis模块
+> * 介绍
 
+redis是一个key-value存储系统。和Memcached类似，它支持存储的value类型相对更多，包括string(字符串)、list(链表)、set(集合)、zset(sorted set --有序集合)和hash（哈希类型）。这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作，而且这些操作都是原子性的。在此基础上，redis支持各种不同方式的排序。与memcached一样，为了保证效率，数据都是缓存在内存中。区别的是redis会周期性的把更新的数据写入磁盘或者把修改操作写入追加的记录文件，并且在此基础上实现了master-slave(主从)同步。
+Redis 是一个高性能的key-value数据库。 redis的出现，很大程度补偿了memcached这类key/value存储的不足，在部 分场合可以对关系数据库起到很好的补充作用。它提供了Java，C/C++，C#，PHP，JavaScript，Perl，Object-C，Python，Ruby，Erlang等客户端，使用很方便。
+Redis支持主从同步。数据可以从主服务器向任意数量的从服务器上同步，从服务器可以是关联其他从服务器的主服务器。这使得Redis可执行单层树复制。存盘可以有意无意的对数据进行写操作。由于完全实现了发布/订阅机制，使得从数据库在任何地方同步树时，可订阅一个频道并接收主服务器完整的消息发布记录。同步对读取操作的可扩展性和数据冗余很有帮助。Redis的官网地址，非常好记，是redis.io。（特意查了一下，域名后缀io属于国家域名，是british Indian Ocean territory，即英属印度洋领地）目前，Vmware在资助着redis项目的开发和维护。
+ > * 安装配置
+ ```shell
+ unzip phpredis-master.zip 
+cd phpredis-master
+/usr/local//php/bin/phpize 
+./configure --with-php-config=/usr/local/php/bin/php-config
+make
+make install
+echo "extension=redis.so" >>  /usr/local/php/lib/php.ini
+```
+> * 重启apache并在客户端页面查看
+```shell
+root@template /usr/local/daguanren 22:48:34 # /usr/local/apache/bin/apachectl stop    
+root@template /usr/local/daguanren 22:49:11 # /usr/local/apache/bin/apachectl start
+```
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/19.png?raw=true)
+### 9.4php优化
+#关闭php可执行系统的函数
+
+disable_function = system,phpinfo,shell_exec,popen,exec,passthru
+
+#关闭页面报错显示php版本
+
+expose_php = Off
+
+#关闭报错前台显示
+
+display_errors = Off  
+
+#定义日志级别
+
+error_reporting = E_WARING & E_ERROR
+
+#开启错误日志
+
+log_errors = On
+
+#定义error的log文件
+
+error_log = [your_log_path]
 
