@@ -24,6 +24,39 @@ LVS集群采用IP负载均衡技术和基于内容请求分发技术。调度器
 ### 2.2lvs三种基本模型
 #### 2.2.1lvs-DR模型是lvs的默认模型，也是企业中用到的最多的模型
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/lvs+keepalived/01.png?raw=true)
+
 `LVS_NAT模型，通常应用与rs较少，rs节点无要求，端口转换的场景`
 
 `解读：地址转换模型，vs通过修改目的ip将报文发送到rs.rs通过dip网关将报文发给vs,vs再将报文的源ip进行修改发送给客户端`
+
+### 2.2.2LVS-TUN 模式
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/lvs+keepalived/02.png?raw=true)
+
+`lvs-TUN模型可以运用于异地机房的负载调度上。`
+
+`解读：隧道模型，跟DR模型比较相似，都是由rs直接回复给cs .跟dr模型不同的是，vs和rs之间可以存在路由，原因是tun模型在报文源ip和目的ip后又加入了一层源ip和目的ip的信息。`
+
+### 2.2.3LVS-NAT 模式
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/lvs+keepalived/03.png?raw=true)
+
+`LVS_NAT模型，通常应用与rs较少，rs节点无要求，端口转换的场景`
+
+`解读：地址转换模型，vs通过修改目的ip将报文发送到rs.rs通过dip网关将报文发给vs,vs再将报文的源ip进行修改发送给客户端。`
+## 三.LVS-DR模式详解
+* 场景假设：
+	> * 客户端：ip：192.168.1.1，mac：00：00：00：00：00：01
+	> * Lvs：vip：192.168.0.2，mac：00：00：00：00：00：02
+	> * Web服务器：ip：192.168.0.3，mac：00：00：00：00：00：03，lo网卡ip：192.168.0.2
+* Lvs工作流程流程：
+    > * 客户向lvs发送一个请求后lvs收到的报文为源IP地址为：192.168.0.1，源mac为：00：00：00：00：00：01。目标IP地址为：192.168.0.2，目标mac地址为：00：00：00：00：00：02
+    > * 当lvs收到请求后会根据自身算法选择一个web服务器对报文进行修改并转发给web服务器，此时转发的报文为IP地址为：192.168.0.1，源mac为：00：00：00：00：00：01，目标IP地址为：192.168.0.2，目标mac地址为：00：00：00：00：00：03
+    > * Web服务器收到lvs抓发过来的请求进行回复，此时web参看报文发现自己的lo网卡有目标地址那么进行恢复。回复的报文为源IP地址：192.168.0.2，源mac地址为：00：00：00：00：00：03，目标IP地址为：192.168.0.1，目标Imac、地址为：00：00：00：00：00：01
+* 总结：
+	> * 整个lvs-的dr模式客户端的计算机可以理解为arp欺骗，是客户的计算机始终认为和同一台计算机通信。
+
+
+
+
+
+
+
