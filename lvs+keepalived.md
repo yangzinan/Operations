@@ -260,7 +260,7 @@ Starting keepalived:                                       [  OK  ]
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
     link/ether 00:0c:29:cc:ec:94 brd ff:ff:ff:ff:ff:ff
     inet 192.168.241.12/24 brd 192.168.241.255 scope global eth0
-    inet 192.168.44.11/32 scope global eth0
+    `inet 192.168.44.11/32 scope global eth0`
     inet6 fe80::20c:29ff:fecc:ec94/64 scope link 
        valid_lft forever preferred_lft forever
 [root@lvs02 keepalived]# ip a 
@@ -305,6 +305,169 @@ Starting keepalived:                                       [  OK  ]
     inet6 fe80::20c:29ff:fef4:f8ab/64 scope link 
        valid_lft forever preferred_lft forever
 ```
+#### 9.1.5启动主机keepalived模拟故障恢复
+* 主机信息
+```shell
+[root@lvs01 keepalived]# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:cc:ec:94 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.12/24 brd 192.168.241.255 scope global eth0
+    `inet 192.168.44.11/32 scope global eth0`
+    inet6 fe80::20c:29ff:fecc:ec94/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+* 从机信息
+```shell
+[root@lvs02 keepalived]# ip a 
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:f4:f8:ab brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.13/24 brd 192.168.241.255 scope global eth0
+    inet6 fe80::20c:29ff:fef4:f8ab/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+### 9.2结合lvs做4成负载均衡
+#### 9.2.1修改主从两台主机的配置文件添加lvs部分
+`参见上文`
+#### 9.2.2重启keepalived查看ipvs信息
+```shell
+[root@lvs01 keepalived]# /etc/init.d/keepalived restart
+Stopping keepalived:                                       [  OK  ]
+Starting keepalived:                                       [  OK  ]
+[root@lvs01 keepalived]# ipvsadm
+IP Virtual Server version 1.2.1 (size=4096)
+Prot LocalAddress:Port Scheduler Flags
+  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
+TCP  192.168.241.11:http wrr persistent 50
+  -> 192.168.241.15:http          Route   1      0          0         
+  -> 192.168.241.16:http          Route   1      0          0         
+```
+#### 9.2.3模拟主机故障
+* 主机信息
+```shell
+[root@lvs01 keepalived]# /etc/init.d/keepalived stop
+Stopping keepalived:                                       [  OK  ]
+[root@lvs01 keepalived]# ipvsadm -L -n
+IP Virtual Server version 1.2.1 (size=4096)
+Prot LocalAddress:Port Scheduler Flags
+  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
+```
+* 从机信息
+```shell
+[root@lvs02 keepalived]# ipvsadm -L -n
+IP Virtual Server version 1.2.1 (size=4096)
+Prot LocalAddress:Port Scheduler Flags
+  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
+TCP  192.168.241.11:80 wrr persistent 50
+  -> 192.168.241.15:80            Route   1      0          0         
+  -> 192.168.241.16:80            Route   1      0          0         
+注：即使主故障，从接管，ipvs信息在从上并不会被删除，只会做VIP的切换
+```
+#### 9.2.3模拟故障恢复
+* 主机信息
+```shell
+[root@lvs01 keepalived]# ip a 
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:cc:ec:94 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.12/24 brd 192.168.241.255 scope global eth0
+    inet 192.168.44.11/32 scope global eth0
+    inet6 fe80::20c:29ff:fecc:ec94/64 scope link 
+       valid_lft forever preferred_lft forever	
+```
+* 从机信息
+```shell
+[root@lvs02 keepalived]# ip a 
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:f4:f8:ab brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.13/24 brd 192.168.241.255 scope global eth0
+    inet6 fe80::20c:29ff:fef4:f8ab/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+## 十.配置脚本触发主从切换
+### 10.1添加监控脚本部分
+```conf
+vrrp_script mysql_check {   #配置监控脚本
+  script "/root/mysql_check.sh"   #监控脚本
+  interval 1    ###检测时间间隔 1s###
+  weigh -100   ###如果条件成立（脚本返回非0），权重-100###
+}
+#添加位置见第八章
+```
+### 10.2给虚拟主机添加使用的脚本
+```conf
+  track_script {
+        mysql_check  #使用监控脚本
+  }
+#添加位置见第八章
+```
+### 10.3以mysql为例编写监控脚本
+```shell
+#!/bin/bash
+ mysqladmin ping > /dev/null 2>&1
+ if [ $? -eq 0 ]; then
+   exit 0
+ fi
+ exit 1
+```
+### 10.4重启两个keepalived
+```shell
+[root@lvs01 keepalived]# /etc/init.d/keepalived restart
+Stopping keepalived:                                       [  OK  ]
+Starting keepalived:                                       [  OK  ]
+[root@lvs02 keepalived]# /etc/init.d/keepalived restart
+Stopping keepalived:                                       [  OK  ]
+Starting keepalived:                                       [  OK  ]
+```
+### 10.5查看VIP
+* 主机
+```shell
+[root@lvs01 keepalived]# ip a 
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:cc:ec:94 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.12/24 brd 192.168.241.255 scope global eth0
+    inet 192.168.44.11/32 scope global eth0
+    inet6 fe80::20c:29ff:fecc:ec94/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+* 从机
+```shell
+[root@lvs02 keepalived]# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:f4:f8:ab brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.13/24 brd 192.168.241.255 scope global eth0
+    inet6 fe80::20c:29ff:fef4:f8ab/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+### 10.6停止主机mysql查看VIP
 
 
 
