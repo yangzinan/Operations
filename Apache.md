@@ -636,4 +636,10 @@ drwxr-xr-x. 2 root root 4096 Sep  8 23:16 no-debug-zts-20121212   #记住此文�
 ```
         在lib\php.ini最后一行添加
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/16.png?raw=true)
+> * 重启apache在页面查看phpinfo
+```shell
+root@template /usr/local/daguanren 22:48:34 # /usr/local/apache/bin/apachectl stop    
+root@template /usr/local/daguanren 22:49:11 # /usr/local/apache/bin/apachectl start
+```
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/17.png?raw=true)
 
