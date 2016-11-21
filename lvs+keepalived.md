@@ -95,7 +95,7 @@ ipv6                  336282  282 ip_vs,ip6t_REJECT,nf_conntrack_ipv6,nf_defrag_
 ### 5.2添加转发VIP
 `ipvsadm -A -t VIP:port -s wrr -p 20`
 
-#-s 参数使用wrr轮询算法 -p会话保持20秒
+##### -s 参数使用wrr轮询算法 -p会话保持20秒
 
 ```shell
 [root@lvs01 ~]# ipvsadm -A -t 192.168.241.11:80 -s wrr -p 20
@@ -148,6 +148,170 @@ echo "2" > /proc/sys/net/ipv4/conf/all/arp_announce
 ### 5.7用curl命令验证
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/lvs+keepalived/04.png?raw=true)
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/lvs+keepalived/05.png?raw=true)
+## 六.KEEPALIVED介绍
+* Layer3,4&7工作在IP/TCP协议栈的IP层，TCP层，及应用层,原理分别如下：
+* Layer3：Keepalived使用Layer3的方式工作式时，Keepalived会定期向服务器群中的服务器发送一个ICMP的数据包（既我们平时用的Ping程序）,如果发现某台服务的IP地址没有激活，Keepalived便报告这台服务器失效，并将它从服务器群中剔除，这种情况的典型例子是某台服务器被非法关机。Layer3的方式是以服务器的IP地址是否有效作为服务器工作正常与否的标准。
+* Layer4:如果您理解了Layer3的方式，Layer4就容易了。Layer4主要以TCP端口的状态来决定服务器工作正常与否。如web server的服务端口一般是80，如果Keepalived检测到80端口没有启动，则Keepalived将把这台服务器从服务器群中剔除。
+* Layer7：Layer7就是工作在具体的应用层了，比Layer3,Layer4要复杂一点，在网络上占用的带宽也要大一些。Keepalived将根据用户的设定检查服务器程序的运行是否正常，如果与用户的设定不相符，则Keepalived将把服务器从服务器群中剔除。
+## 七.安装KEEPALIVED
+```shell
+tar zxf keepalived-1.1.17.tar.gz
+cd keepalived-1.1.17
+./configure
+make && make install
+cp /usr/local/etc/rc.d/init.d/keepalived /etc/init.d  
+cp /usr/local/etc/sysconfig/keepalived /etc/sysconfig
+cp /usr/local/etc/keepalived/keepalived.conf /etc/keepalived  
+cp /usr/local/sbin/keepalive /usr/sbin
+chkconfig --add keepalived
+#注：使用lvs+keepalived高可用请在安装keepalived之前安装lvs软件，参见第四章
+```
+## 八.KEEPALIVED配置
+```conf
+global_defs {
+	notification_email {
+	znyang@vip.qq.com
+  }
+
+  notification_email_from Alexandre.Cassen@firewall.loc
+	smtp_server 127.0.0.1
+	smtp_connect_timeout 30
+	router_id LVS_1  #这行是keepalived服务器ID在同一个局域网内一定不能重复
+}
+
+vrrp_script nginx_check {   #配置监控脚本
+  script "/root/nginx_check.sh"   #监控脚本
+  interval 1    ###检测时间间隔 1s###
+  weigh -60   ###如果条件成立（脚本返回非0），权重-60###
+}
+ 
+vrrp_instance VI_1 {
+	state MASTER  #MASTER 是主 BACKUP是从
+	interface eth0  #网络接口（需要绑定VIP的网卡）
+	virtual_router_id 51  #配置实例的表示，在同一个配置文件中每个实例的标识是唯一的，被节点的要和主节点的一致
+	priority 100  #优先级数值越大优先级越高一般同一个实例中主比从大100
+ 	advert_int 1  #同步检查的时间间隔
+
+  track_script {
+        nginx_check  #使用监控脚本
+  }
+
+ 	authentication {
+ 	  auth_type PASS  #权限类型是密码
+ 	  auth_pass 1111  #密码
+ 	}
+  
+ 	virtual_ipaddress {
+ 		192.168.18.200
+    #虚拟路由器的地址（ ifconfig eth网卡号:编号 VIP netmask 255.255.255.0 up就是这个虚拟ip）
+ 	}
+}
+
+##################若只做VIP切换则不需要下面的转发配置###########################################
+
+virtual_server 192.168.18.200 8080 {  #配置虚拟主机
+    delay_loop 6
+    lb_algo wrr
+    lb_kind DR
+    nat_mask 255.255.255.0
+    persistence_timeout 50
+    protocol TCP
+
+    real_server 192.168.18.203 8080 { #第一个RS
+        weight 1
+        TCP_CHECK {
+            connect_timeout 8
+            nb_get_retry 3
+            delay_before_retry 3
+            connect_port 8080  #健康检查的端口
+        }
+    }
+
+    real_server 192.168.18.204 8080 {  #第二个RS
+        weight 1
+        TCP_CHECK {
+          connect_timeout 8
+          nb_get_retry 3
+          delay_before_retry 3
+          connect_port 8080  #健康检查的端口
+     }
+  }
+}
+```
+## 九.生产实例
+### 9.1只做高可用VIP切换
+#### 9.1.1按照上一章配置文件只复制到VIP切换部分到配置文件
+`先清空配置文参照上文配置`
+#### 9.1.2分别启动主从keepalived
+```shell
+[root@lvs01 keepalived]# /etc/init.d/keepalived start
+Starting keepalived:                                       [  OK  ]
+[root@lvs02 keepalived]# /etc/init.d/keepalived start
+Starting keepalived:                                       [  OK  ]
+```
+#### 9.1.3查看主从IP
+```shell
+[root@lvs01 keepalived]# ip a 
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:cc:ec:94 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.12/24 brd 192.168.241.255 scope global eth0
+    inet 192.168.44.11/32 scope global eth0
+    inet6 fe80::20c:29ff:fecc:ec94/64 scope link 
+       valid_lft forever preferred_lft forever
+[root@lvs02 keepalived]# ip a 
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:f4:f8:ab brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.13/24 brd 192.168.241.255 scope global eth0
+    inet6 fe80::20c:29ff:fef4:f8ab/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+#### 9.1.4停止主机keepalived模拟主机故障
+* 主机信息
+```shell
+[root@lvs01 keepalived]# ip a 
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:cc:ec:94 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.12/24 brd 192.168.241.255 scope global eth0
+    inet6 fe80::20c:29ff:fecc:ec94/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+* 从机信息
+```shell
+[root@lvs02 keepalived]# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:f4:f8:ab brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.13/24 brd 192.168.241.255 scope global eth0
+    `inet 192.168.44.11/32 scope global eth0`
+    inet6 fe80::20c:29ff:fef4:f8ab/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+
+
+
+
+
+
+
 
 
 
