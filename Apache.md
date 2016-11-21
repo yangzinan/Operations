@@ -593,6 +593,8 @@ cp php.ini-production /usr/local/php/lib/php.ini
 
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/13.png?raw=true)
 
+
+
 2. 找到如下两行
 
     AddType application/x-compress .Z
