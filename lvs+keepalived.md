@@ -53,6 +53,104 @@ LVS集群采用IP负载均衡技术和基于内容请求分发技术。调度器
     * Web服务器收到lvs抓发过来的请求进行回复，此时web参看报文发现自己的lo网卡有目标地址那么进行恢复。回复的报文为源IP地址：192.168.0.2，源mac地址为：00：00：00：00：00：03，目标IP地址为：192.168.0.1，目标Imac、地址为：00：00：00：00：00：01
 * 总结：
     * 整个lvs-的dr模式客户端的计算机可以理解为arp欺骗，是客户的计算机始终认为和同一台计算机通信。
+## 四.LVS的安装
+### 4.1升级内核并安装内核开发包开启内核转发
+```shell
+yum update -y kernel
+yum install -y kernel-devel
+reboot
+ln -s /usr/src/kernels/`uname -r` /usr/src/linux
+sed -i 's#net.ipv4.ip_forward = 0#net.ipv4.ip_forward = 1#g' /etc/sysctl.conf  
+sysctl -p
+```
+### 4.2安装lvs
+```shell
+yum install popt-devel ipvsadm -y
+root@template ~ 23:58:02 # lsmod | grep ip_vs
+root@template ~ 23:58:14 # modprobe ip_vs
+root@template ~ 23:58:23 # lsmod | grep ip_vs
+ip_vs                 126897  0 
+libcrc32c               1246  1 ip_vs
+ipv6                  336282  282 ip_vs,ip6t_REJECT,nf_conntrack_ipv6,nf_defrag_ipv6
+```
+## 五.LVS应用案例 
+### 5.1配置lvs主机
+`ifconfig eth网卡号:编号 VIP netmask 255.255.255.0 up`
+
+```shell
+[root@lvs01 ~]# ifconfig eth0:12 192.168.241.11 netmask 255.255.255.0 up
+[root@lvs01 ~]# ip a 
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:cc:ec:94 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.12/24 brd 192.168.241.255 scope global eth0
+    inet 192.168.241.11/24 brd 192.168.241.255 scope global secondary eth0:12
+    inet6 fe80::20c:29ff:fecc:ec94/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+### 5.2添加转发VIP
+`ipvsadm -A -t VIP:port -s wrr -p 20`
+
+#-s 参数使用wrr轮询算法 -p会话保持20秒
+
+```shell
+[root@lvs01 ~]# ipvsadm -A -t 192.168.241.11:80 -s wrr -p 20
+[root@lvs01 ~]#
+```
+### 5.3添加后端RSV（web）
+`ipvsadm -a -t VIP:port -r RIP:port -g -w 1`
+
+```shell
+[root@lvs01 ~]# ipvsadm -a -t 192.168.241.11:80 -r 192.168.241.15:80 -g -w 1
+[root@lvs01 ~]# ipvsadm -a -t 192.168.241.11:80 -r 192.168.241.16:80 -g -w 1
+[root@lvs01 ~]#
+```
+### 5.4查看设置
+```shell
+[root@lvs01 ~]# ipvsadm -L -n
+IP Virtual Server version 1.2.1 (size=4096)
+Prot LocalAddress:Port Scheduler Flags
+  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
+TCP  192.168.241.11:80 wrr persistent 20
+  -> 192.168.241.15:80            Route   1      0          0         
+  -> 192.168.241.16:80            Route   1      0          0         
+[root@lvs01 ~]#
+```
+### 5.5配置后端rsv的lo网卡
+`ifconfig lo:num VIP netmask 255.255.255.255 up`
+
+```shell
+[root@apache ~]# ifconfig lo:0 192.168.241.11 netmask 255.255.255.255 up      
+[root@apache ~]# ip a 
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet 192.168.241.11/32 brd 192.168.241.11 scope global lo:0
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:d9:fc:b8 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.241.15/24 brd 192.168.241.255 scope global eth0
+    inet6 fe80::20c:29ff:fed9:fcb8/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+### 5.6抑制rsv的arp
+```shell
+echo "1" > /proc/sys/net/ipv4/conf/all/arp_ignore
+echo "1" > /proc/sys/net/ipv4/conf/lo/arp_ignore
+echo "2" > /proc/sys/net/ipv4/conf/lo/arp_announce
+echo "2" > /proc/sys/net/ipv4/conf/all/arp_announce
+```
+### 5.7用curl命令验证
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/lvs+keepalived/04.png?raw=true)
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/lvs+keepalived/05.png?raw=true)
+
+
+
 
 
 
