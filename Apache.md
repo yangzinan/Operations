@@ -691,27 +691,17 @@ root@template /usr/local/daguanren 22:49:11 # /usr/local/apache/bin/apachectl st
 ```
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/19.png?raw=true)
 ### 9.4php优化
+```conf
 #关闭php可执行系统的函数
-
 disable_function = system,phpinfo,shell_exec,popen,exec,passthru
-
 #关闭页面报错显示php版本
-
 expose_php = Off
-
 #关闭报错前台显示
-
 display_errors = Off  
-
 #定义日志级别
-
 error_reporting = E_WARING & E_ERROR
-
 #开启错误日志
-
 log_errors = On
-
 #定义error的log文件
-
 error_log = [your_log_path]
-
+```
