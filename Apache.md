@@ -586,4 +586,28 @@ cp php.ini-production /usr/local/php/lib/php.ini
 #### 9.2.4配置apache解析php
 1. 添加主持.php后缀名
 
-![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/12.png?raw=true)
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/13.png?raw=true)
+2. 找到如下两行
+
+    AddType application/x-compress .Z
+
+    AddType application/x-gzip .gz .tgz
+
+    在后面添加
+
+    AddType application/x-httpd-php .php .phtml
+
+    AddType application/x-httpd-php-source .phps
+
+
+#### 9.2.5重启apache
+```shell
+root@template /usr/local/daguanren 22:48:34 # /usr/local/apache/bin/apachectl stop    
+root@template /usr/local/daguanren 22:49:11 # /usr/local/apache/bin/apachectl start
+```
+#### 9.2.6修改daguanren虚拟主机的主页为php文件
+```shell
+cd /usr/local/daguanren
+mv index.html index.php
+```
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/14.png?raw=true)
