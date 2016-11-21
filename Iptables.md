@@ -129,6 +129,7 @@ target     prot opt source               destination
 * --sport 源端口（port:port可以用分号制定端口范围）
 * -m multiport 多端口 （-m mutilport --dport 21,22,65,89）
 * -j动作（DROP,ACCEPT）
+
 ### 4.3一般通用安全配置
 ```shell
 iptables -F
