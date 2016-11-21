@@ -642,4 +642,31 @@ root@template /usr/local/daguanren 22:48:34 # /usr/local/apache/bin/apachectl st
 root@template /usr/local/daguanren 22:49:11 # /usr/local/apache/bin/apachectl start
 ```
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/17.png?raw=true)
+#### 9.3.2 Zend OPCache模块
+> * 介绍
+
+Zend OPcache 通过将 PHP 脚本预编译的字节码存储到共享内存中来提升 PHP 的性能， 存储预编译字节码的好处就是 省去了每次加载和解析 PHP 脚本的开销。
+> * 安装配置
+
+默认安装php已经安装
+```shell
+cat>> /usr/local/php/lib/php.ini<<EOF
+zend_extension= /usr/local/php/lib/php/extensions/no-debug-zts-20121212/opcache.so
+[opcache]
+opcache.enable=1
+opcache.enable_cli=1
+opcache.memory_consumption=256
+opcache.interned_strings_buffer=16
+opcache.max_accelerated_files=5000
+opcache.revalidate_freq=60
+opcache.load_comments=1
+EOF
+```
+> * 重启php并在客户端页面查看
+```shell
+root@template /usr/local/daguanren 22:48:34 # /usr/local/apache/bin/apachectl stop    
+root@template /usr/local/daguanren 22:49:11 # /usr/local/apache/bin/apachectl start
+```
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/18.png?raw=true)
+
 
