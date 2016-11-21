@@ -21,4 +21,4 @@ C1和PC2虽然属于不同的广播域，但它们处于同一网段中，因此
 LVS集群采用IP负载均衡技术和基于内容请求分发技术。调度器具有很好的吞吐率，将请求均衡地转移到不同的服务器上执行，且调度器自动屏蔽掉服务器的故障，从而将一组服务器构成一个高性能的、高可用的虚拟服务器。整个服务器集群的结构对客户是透明的，而且无需修改客户端和服务器端的程序。为此，在设计时需要考虑系统的透明性、可伸缩性、高可用性和易管理性。
 ### 2.2lvs三种基本模型
 #### 2.2.1lvs-DR模型是lvs的默认模型，也是企业中用到的最多的模型
-![image](https://github.com/yangzinan/Operations/blob/master/iamge/lvs+Keepalived/01.png?raw=true)
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/lvs+keepalived/01.png?raw=true)
