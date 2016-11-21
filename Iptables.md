@@ -140,6 +140,8 @@ iptables -P INPUT DROP
 iptables -P OUTPUT ACCEPT
 iptables -P FORWARD DROP
 ```
+
+
 ## 五.IPTABLES NAT表的操作
 ### 5.1DNAT功能
 #### 5.1.1DNAT介绍
