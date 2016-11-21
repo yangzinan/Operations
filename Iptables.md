@@ -18,4 +18,6 @@ Nat表是地址转换表，负责来源与目的的ip和port的转换，一般�
 仅做了解
 ### 2.2.链
 ![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/iptables/01.png?raw=true)
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/iptables/02.png?raw=true)
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/iptables/03.png?raw=true)
 
