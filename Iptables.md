@@ -120,15 +120,15 @@ Chain OUTPUT (policy ACCEPT)
 target     prot opt source               destination         
 ```
 ### 4.2filter表操作参数详解
-> * -s 源地址
-> * -d 目的地址
-> * -i 流入网卡
-> * -o 流出网卡
-> * -p 协议（tcp，udp，icmp，all默认不加-p参数即为all）
-> * --dport 目的端口（port:port可以用分号制定端口范围）
-> * --sport 源端口（port:port可以用分号制定端口范围）
-> * -m multiport 多端口 （-m mutilport --dport 21,22,65,89）
-> * -j动作（DROP,ACCEPT）
+* -s 源地址
+* -d 目的地址
+* -i 流入网卡
+* -o 流出网卡
+* -p 协议（tcp，udp，icmp，all默认不加-p参数即为all）
+* --dport 目的端口（port:port可以用分号制定端口范围）
+* --sport 源端口（port:port可以用分号制定端口范围）
+* -m multiport 多端口 （-m mutilport --dport 21,22,65,89）
+* -j动作（DROP,ACCEPT）
 ### 4.3一般通用安全配置
 ```shell
 iptables -F

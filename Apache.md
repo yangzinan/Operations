@@ -92,8 +92,8 @@ make && make install
 
 ![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/apache/01.png?raw=true)
 ##### 解决办法：
-> * 打开配置文件（httpd.conf）在安装目录下的conf目录下（本例在/usr/local/apache/conf下）
-> * 修改ServerName打开注释并将ServerName改为localhost
+* 打开配置文件（httpd.conf）在安装目录下的conf目录下（本例在/usr/local/apache/conf下）
+* 修改ServerName打开注释并将ServerName改为localhost
 
 ##### 启动apache
 ```shell
@@ -589,13 +589,13 @@ ln -s /usr/local/php5.5.20 /usr/local/php
 cp php.ini-production /usr/local/php/lib/php.ini
 ```
 #### 9.2.4配置apache解析php
-> * 添加主持.php后缀名
+* 添加主持.php后缀名
 
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/13.png?raw=true)
 
 
 
-> * 找到如下两行
+* 找到如下两行
 
     AddType application/x-compress .Z
 
@@ -623,15 +623,15 @@ mv index.html index.php
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/15.png?raw=true)
 ### 9.3php模块
 #### 9.3.1 memcache模块
-> * 介绍
+* 介绍
 
 memcache是一套分布式的高速缓存系统，由LiveJournal的Brad Fitzpatrick开发，但目前被许多网站使用以提升网站的访问速度，尤其对于一些大型的、需要频繁访问数据库的网站访问速度提升效果十分显著[1]  。这是一套开放源代码软件，以BSD license授权发布。
-> * 安装
+* 安装
 
 ```shell
 /usr/local/php/bin/pecl install memcache
 ```
-> * 配置生效
+* 配置生效
 ```shell
 root@template /usr/local/php/bin 23:31:56 # ll /usr/local/php/lib/php/extensions  #查看该目录
 total 4
@@ -639,17 +639,17 @@ drwxr-xr-x. 2 root root 4096 Sep  8 23:16 no-debug-zts-20121212   #记住此文�
 ```
         在lib\php.ini最后一行添加
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/16.png?raw=true)
-> * 重启apache在页面查看phpinfo
+* 重启apache在页面查看phpinfo
 ```shell
 root@template /usr/local/daguanren 22:48:34 # /usr/local/apache/bin/apachectl stop    
 root@template /usr/local/daguanren 22:49:11 # /usr/local/apache/bin/apachectl start
 ```
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/17.png?raw=true)
 #### 9.3.2 Zend OPCache模块
-> * 介绍
+* 介绍
 
 Zend OPcache 通过将 PHP 脚本预编译的字节码存储到共享内存中来提升 PHP 的性能， 存储预编译字节码的好处就是 省去了每次加载和解析 PHP 脚本的开销。
-> * 安装配置
+* 安装配置
 
 默认安装php已经安装
 ```shell
@@ -665,19 +665,19 @@ opcache.revalidate_freq=60
 opcache.load_comments=1
 EOF
 ```
-> * 重启php并在客户端页面查看
+* 重启php并在客户端页面查看
 ```shell
 root@template /usr/local/daguanren 22:48:34 # /usr/local/apache/bin/apachectl stop    
 root@template /usr/local/daguanren 22:49:11 # /usr/local/apache/bin/apachectl start
 ```
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/18.png?raw=true)
 #### 9.3.3redis模块
-> * 介绍
+* 介绍
 
 redis是一个key-value存储系统。和Memcached类似，它支持存储的value类型相对更多，包括string(字符串)、list(链表)、set(集合)、zset(sorted set --有序集合)和hash（哈希类型）。这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作，而且这些操作都是原子性的。在此基础上，redis支持各种不同方式的排序。与memcached一样，为了保证效率，数据都是缓存在内存中。区别的是redis会周期性的把更新的数据写入磁盘或者把修改操作写入追加的记录文件，并且在此基础上实现了master-slave(主从)同步。
 Redis 是一个高性能的key-value数据库。 redis的出现，很大程度补偿了memcached这类key/value存储的不足，在部 分场合可以对关系数据库起到很好的补充作用。它提供了Java，C/C++，C#，PHP，JavaScript，Perl，Object-C，Python，Ruby，Erlang等客户端，使用很方便。
 Redis支持主从同步。数据可以从主服务器向任意数量的从服务器上同步，从服务器可以是关联其他从服务器的主服务器。这使得Redis可执行单层树复制。存盘可以有意无意的对数据进行写操作。由于完全实现了发布/订阅机制，使得从数据库在任何地方同步树时，可订阅一个频道并接收主服务器完整的消息发布记录。同步对读取操作的可扩展性和数据冗余很有帮助。Redis的官网地址，非常好记，是redis.io。（特意查了一下，域名后缀io属于国家域名，是british Indian Ocean territory，即英属印度洋领地）目前，Vmware在资助着redis项目的开发和维护。
- > * 安装配置
+* 安装配置
  
  ```shell
 unzip phpredis-master.zip 
@@ -688,7 +688,7 @@ make
 make install
 echo "extension=redis.so" >>  /usr/local/php/lib/php.ini
 ```
-> * 重启apache并在客户端页面查看
+* 重启apache并在客户端页面查看
 ```shell
 root@template /usr/local/daguanren 22:48:34 # /usr/local/apache/bin/apachectl stop    
 root@template /usr/local/daguanren 22:49:11 # /usr/local/apache/bin/apachectl start
