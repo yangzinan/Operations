@@ -504,3 +504,28 @@ Getting Private key
 ### 8.2配置apache ssl
 #### 8.2.1配置主配置文件监听443端口
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/11.png?raw=true)
+#### 8.2.2配置ssl虚拟主机
+```conf
+<VirtualHost *:443>
+    SSLEngine on
+    SSLCertificateFile /usr/local/apache/conf/server.crt  #证书签名
+    SSLCertificateKeyFile /usr/local/apache/conf/server.key  #公钥
+    <Directory /usr/local/apache/ssl>
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Order allow,deny
+        Allow from all
+    </Directory>
+    ServerAdmin email@example.com
+DocumentRoot /usr/local/apache/ssl
+ServerName proxy.mimvp.com
+</VirtualHost>
+```
+#### 8.2.3检查语法重启apache
+```shell
+root@template /usr/local/apache/conf 21:49:08 # /usr/local/apache/bin/apachectl -t      
+Syntax OK
+root@template /usr/local/apache/conf 21:49:15 # /usr/local/apache/bin/apachectl graceful
+```
+8.2.4通过浏览器使用https访问
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/12.png?raw=true)
