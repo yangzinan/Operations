@@ -611,3 +611,5 @@ cd /usr/local/daguanren
 mv index.html index.php
 ```
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/14.png?raw=true)
+#### 9.2.7客户端查看php
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/15.png?raw=true)
