@@ -618,3 +618,22 @@ mv index.html index.php
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/14.png?raw=true)
 #### 9.2.7客户端查看php
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/15.png?raw=true)
+### 9.3php模块
+#### 9.3.1 memcache模块
+> * 介绍
+
+memcache是一套分布式的高速缓存系统，由LiveJournal的Brad Fitzpatrick开发，但目前被许多网站使用以提升网站的访问速度，尤其对于一些大型的、需要频繁访问数据库的网站访问速度提升效果十分显著[1]  。这是一套开放源代码软件，以BSD license授权发布。
+> * 安装
+
+```shell
+/usr/local/php/bin/pecl install memcache
+```
+> * 配置生效
+```shell
+root@template /usr/local/php/bin 23:31:56 # ll /usr/local/php/lib/php/extensions  #查看该目录
+total 4
+drwxr-xr-x. 2 root root 4096 Sep  8 23:16 no-debug-zts-20121212   #记住此文件夹名称
+```
+        在lib\php.ini最后一行添加
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/16.png?raw=true)
+
