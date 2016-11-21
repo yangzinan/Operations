@@ -429,3 +429,78 @@ root@template /usr/local/apache/conf 20:31:12 # /usr/local/apache/bin/apachectl 
 #### 6.2.6查看压缩结果
 ![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/10.png?raw=true)
 发现已有gzip
+## 七.APACHE的两种工作模式
+### 7.1prefork模式
+#### 7.1.1prefork模式简介
+如果不用“--with-mpm”显式指定某种MPM，prefork就是Unix平台上缺省的MPM。它所采用的预派生子进程方式也是 Apache 1.3中采用的模式。prefork本身并没有使用到线程，2.0版使用它是为了与1.3版保持兼容性；另一方面，prefork用单独的子进程来处理不同的请求，进程之间是彼此独立的，这也使其成为最稳定的MPM之一。
+prefork的工作原理是，控制进程在最初建立“StartServers”个子进程后，为了满足MinSpareServers设置的需要创建一个进程，等待一秒钟，继续创建两个，再等待一秒钟，继续创建四个……如此按指数级增加创建的进程数，最多达到每秒32个，直到满足 MinSpareServers设置的值为止。这就是预派生（prefork）的由来。这种模式可以不必在请求到来时再产生新的进程，从而减小了系统开销以增加性能。servrelimit指系统限制最大的进程数，默认值很小如果MaxClients设的比unix默认servrelimit还大，就无效，返回默认值。因此servrelimit肯定要远大于apache的MaxClients
+preforkMPM使用多个子进程，但每个子进程并不包含多线程。每个进程只处理一个链接。在许多系统上它的速度和workerMPM一样快，但是需要更多的内存。这种无线程的设计在某些情况下优于workerMPM：它可以应用于不具备线程安全的第三方模块(比如php)，且在不支持线程调试的平台上易于调试，而且还具有比workerMPM更高的稳定性。
+#### 7.1.2prefork配置详解（conf/extra/http-mpm.conf）
+```conf
+< IfModule mpm_prefork_module>  #工作在prefork模式下
+    StartServers 5  # StartServers是开始的进程数
+    MinSpareServers 3  # MinSpareServers是最小空闲进数
+    MaxSpareServers 10  # MaxSpareServers是最大空闲进程数
+    ServerLimit 16  # ServerLimit是最大的进程数，最大值为2000
+    MaxClients 16  # MaxClients是最大的请求并发
+    MaxRequestsPerChild 2000
+</IfModule>
+```
+### 7.2worker模式
+#### 7.2.1 worker模式详解
+相对于prefork，worker全新的支持多线程和多进程混合模型的MPM。由于使用线程来处理，所以可以处理相对海量的请求，而系统资源的开销要小 于基于进程的服务器。但是，worker也使用了多进程，每个进程又生成多个线程，以获得基于进程服务器的稳定性。在configure ?with-mpm=worker后，进行make编译、make install安装。
+Worker 由主控制进程生成“StartServers”个子进程，每个子进程中包含固定的ThreadsPerChild线程数，各个线程独立地处理请求。同样， 为了不在请求到来时再生成线程，MinSpareThreads和MaxSpareThreads设置了最少和最多的空闲线程数；而MaxClients 设置了同时连入的clients最大总数。如果现有子进程中的线程总数不能满足负载，控制进程将派生新的子进程。MinSpareThreads和 MaxSpareThreads的最大缺省值分别是75和250。这两个参数对Apache的性能影响并不大，可以按照实际情况相应调节。 ThreadsPerChild是worker MPM中与性能相关最密切的指令。ThreadsPerChild的最大缺省值是64，如果负载较大，64也是不够的。这时要显式使用 ThreadLimit指令，它的最大缺省值是20000。Worker模式下所能同时处理的请求总数是由子进程总数乘以ThreadsPerChild 值决定的，应该大于等于MaxClients。如果负载很大，现有的子进程数不能满足时，控制进程会派生新的子进程。默认最大的子进程总数是16，加大时 也需要显式声明ServerLimit（最大值是20000）。需要注意的是，如果显式声明了ServerLimit，那么它乘以 ThreadsPerChild的值必须大于等于MaxClients，而且MaxClients必须是ThreadsPerChild的整数倍，否则 Apache将会自动调节到一个相应值。
+#### 7.2.2 worker配置详解（conf/extra/http-mpm.conf）
+```conf
+< IfModule mpm_worker_module>   #工作在worker模式下
+    StartServers         4  # StartServers是开始的进程数
+    MaxClients         300
+    MinSpareThreads     25
+    MaxSpareThreads     75
+    ThreadsPerChild     25
+    MaxRequestsPerChild  0
+</IfModule>
+```
+## 八.APACHE的SSL证书配置
+### 8.1生成ssl证书（注意此步骤只用于测试正式生产环境需要到正规的证书机构购买）
+#### 8.1.1生成一个2048为的私钥
+```shell
+root@template /usr/local/apache/conf 21:05:44 # openssl genrsa -out server.key 2048
+Generating RSA private key, 2048 bit long modulus
+...........+++
+....+++
+e is 65537 (0x10001)
+```
+#### 8.1.2生成证书签名请求（CSR），这里需要填写许多信息，如国家，省市，公司等
+```shell
+root@template /usr/local/apache/conf 21:10:51 # openssl req -new -key server.key -out server.csr
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:dd
+State or Province Name (full name) []:daguanren
+Locality Name (eg, city) [Default City]:tianjin
+Organization Name (eg, company) [Default Company Ltd]:daguanren
+Organizational Unit Name (eg, section) []:daguanren
+Common Name (eg, your name or your server's hostname) []:192.168.44.10
+Email Address []:daguanren@gmail.com
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+An optional company name []:daguanren
+```
+#### 8.1.3生成类型为X509的自签名证书。有效期设置3650天，即有效期为10年
+```shell 
+root@template /usr/local/apache/conf 21:11:50 # openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt
+Signature ok
+subject=/C=dd/ST=daguanren/L=tianjin/O=daguanren/OU=daguanren/CN=192.168.44.10/emailAddress=daguanren@gmail.com
+Getting Private key
+```
+### 8.2配置apache ssl
+#### 8.2.1配置主配置文件监听443端口
+![image](https://github.com/yangzinan/Operations/blob/master/iamge/apache/11.png?raw=true)
