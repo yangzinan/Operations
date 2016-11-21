@@ -200,7 +200,7 @@ LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O" c
 sed	-i 's@#Includeconf/extra/httpd-vhosts.conf@Includeconf/extra/httpd-vhosts.conf@g' /usr/local/apache/conf/httpd.conf
 注：可以使用sed命令在非交互模式下快速修改，但是后面的文件路径需要读者根据自己的路径修改
 ```
-##### 2.3)	修改虚拟主机的配置文件（httpd-vhosts.conf位于conf目录下的extra目录里面）
+##### 2.修改虚拟主机的配置文件（httpd-vhosts.conf位于conf目录下的extra目录里面）
 ```conf
 #
 # Virtual Hosts
@@ -237,19 +237,19 @@ NameVirtualHost *:80
     CustomLog "logs/daguanren-access_log" common   #当前虚拟主机的访问日志
 </VirtualHost>
 ```
-##### 4.检测语法重启apache
+##### 3.检测语法重启apache
 ```shell
 root@template /usr/local/apache/conf/extra 17:34:23 # /usr/local/apache/bin/apachectl -t      
 Syntax OK
 root@template /usr/local/apache/conf/extra 17:34:27 # /usr/local/apache/bin/apachectl graceful
 注：这里使用graceful而不是用stop再start，因为graceful是优雅的重启只是重新加载配置文件而不会影响正在访问的用户
 ```
-##### 5.创建一个index.html文件方便测试
+##### 4.创建一个index.html文件方便测试
 ```shell
 cd /usr/local/daguanren
 echo "Hello World" > index.html
 ```
-##### 6.修改windows主机的hosts文件进行测试
+##### 5.修改windows主机的hosts文件进行测试
 ![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/apache/03.png?raw=true)
 
 `出现403权限拒绝解决办法：`
