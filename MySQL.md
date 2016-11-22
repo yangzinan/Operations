@@ -1,4 +1,4 @@
-# MySQL
+﻿# MySQL
 #### By：大官人
 #### Email：DaGuanR@gmail.com
 #### QQ：375739049
@@ -230,12 +230,11 @@ mysql> select user,host from mysql.user;
 ```
 #### 4.2.2创建用户
 * 创建用的语句和权限
+	`grant [grants] on '[database_name]'.'[table_name]' to [user_name]@[hostname] identified by '[password]';`
 
-`grant [grants] on '[database_name]'.'[table_name]' to [user_name]@[hostname] identified by '[password]';`
-
-`grants是要赋予的权限（权限见下表） database_name 是数据库的名称 user_name是用户名 host_name是主机名 最后是密码`
+	`grants是要赋予的权限（权限见下表） database_name 是数据库的名称 user_name是用户名 host_name是主机名 最后是密码`
 	
-`权限列表`
+	`权限列表`
 ```conf
     SELECT                     --查询
 	UPDATE                     --更新，修改表内容
@@ -272,7 +271,7 @@ mysql> select user,host from mysql.user;
 ```
 * 权限的刷新
 
-`目前我们创建的用户已经可以直接生效，但是mysql官方建议创建完成用户后要刷新权限表，所以生产环境为了避免意外的出现我们还是执行刷新权限`
+	`目前我们创建的用户已经可以直接生效，但是mysql官方建议创建完成用户后要刷新权限表，所以生产环境为了避免意外的出现我们还是执行刷新权限`
 
 ```shell
 mysql> flush privileges;
@@ -371,8 +370,8 @@ mysql> show tables;
 mysql>
 ```
 * 创建数据库和表
-
-`create database [database_name];
+```sql
+create database [database_name];
 create table 表名(id int(4)   #创建表 id 整数型
                   not null   #id不可谓空
                   primary key auto_increment  #id为主键且自动增长 
@@ -381,7 +380,7 @@ create table 表名(id int(4)   #创建表 id 整数型
                   not null   #不可为空
 				  default 值  #定义默认值
                   );
-`
+```
 ```shell
 mysql> create database daguanren;
 Query OK, 1 row affected (0.01 sec)
@@ -405,7 +404,6 @@ mysql> desc users;
 2 rows in set (0.01 sec)
 ```
 * 插入数据
-
 `insert into [table_name]( field,…) values(value….);`
 ```shell
 mysql> insert into users(name) values('daguanren');
@@ -420,7 +418,6 @@ mysql> select * from users;
 1 row in set (0.03 sec)
 ```
 * 修改数据
-
 `updata [table_name] set [field]=[value] ……`
 ```shell
 mysql> insert into users(name) values('xiaoguanren');           
@@ -498,7 +495,7 @@ root@template /backup/mysql 21:06:10 # ll
 total 4
 -rw-r--r--. 1 root root 1906 Sep 12 21:06 back1.sql
 ```
-* 5.1.2方法2
+### 5.1.2方法2
 `mysqldump –u[user_name] –p[passwoed] -B [databasename] > [file_name];`
 ```shell
 root@template /backup/mysql 21:09:02 # mysqldump -uroot -p7758521 -B daguanren > back2.sql 
@@ -507,7 +504,601 @@ total 8
 -rw-r--r--. 1 root root 1906 Sep 12 21:09 back1.sql
 -rw-r--r--. 1 root root 2058 Sep 12 21:09 back2.sql
 ```
+###5.1.3还原数据库和方法1 方法2的比较
 
+```sql
+mysql –u[user_name] –p[password] < [file_name]
+```
+```shell
+root@template /backup/mysql 21:10:48 #mysql -uroot -p7758521 < back1.sql; 
+ERROR 1046 (3D000) at line 22: No database selected
+root@template /backup/mysql 21:11:45 # mysql -uroot -p7758521 < back2.sql;
+```
+**我们可以看到用方法1备份的文件还原失败了提示没有选在数据库，而用方法2备份的可以成功，我们对比一下俩个备份文件**
+```shell
+root@template /backup/mysql 21:15:58 # diff back1.sql back2.sql 
+18a19,26
+> -- Current Database: `daguanren`
+> --
+> 
+> CREATE DATABASE /*!32312 IF NOT EXISTS*/ `daguanren` /*!40100 DEFAULT CHARACTER SET utf8 */;
+> 
+> USE `daguanren`;                             
+> 
+> --
+51c59
+< -- Dump completed on 2016-09-12 21:09:02
+---
+> -- Dump completed on 2016-09-12 21:09:07
+#从这里可以看出用方法2备份的文件里面有创建数据库并切换数据库，而方法1 的没有，所以使用方法1备份的文件必须先要创建数据库才能恢复所以一般生产我们使用方法2备份
+```
+### 5.2备份还原多个数据库
+```sql
+mysqldump –u[user_name] –p[password] -B [database_name] [database_name] ... > [file_name]
+```
+```shell
+root@template /backup/mysql 16:29:15 # mysqldump -uroot -p7758521 -B test daguanren > back3.sql
+mysql> drop database test;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> drop database daguanren;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| log                |
+| mysql              |
+| performance_schema |
++--------------------+
+4 rows in set (0.00 sec)
+root@template /backup/mysql 16:31:10 # mysql -uroot -p7758521 < back3.sql 
+root@template /backup/mysql 16:31:19 # mysql -uroot -p       
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 36
+Server version: 5.5.52-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| daguanren          |
+| log                |
+| mysql              |
+| performance_schema |
+| test               |
++--------------------+
+6 rows in set (0.00 sec)
+```
+### 5.3数据表的备份还原
+
+```sql
+mysqldump -uroot -p7758521 [database_name] [table_name] [table_name] … > [file_name]
+```
+```shell
+mysql> use daguanren
+Database changed
+mysql> show tables;
++---------------------+
+| Tables_in_daguanren |
++---------------------+
+| users               |
++---------------------+
+1 row in set (0.00 sec)
+
+mysql> create table users2(id int(4) not null primary key auto_increment COMMENT 'id',name char(20) not null default '');
+Query OK, 0 rows affected (0.04 sec)	
+
+mysql> show tables;
++---------------------+
+| Tables_in_daguanren |
++---------------------+
+| users               |
+| users2              |
++---------------------+
+2 rows in set (0.00 sec)
+mysql> \q
+Bye
+root@template /backup/mysql 16:39:37 # mysqldump -uroot -p7758521 daguanren users users2 > back4.sql
+root@template /backup/mysql 16:40:32 # mysql -uroot -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 39
+Server version: 5.5.52-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use daguanren
+Database changed
+mysql> show tables;
++---------------------+
+| Tables_in_daguanren |
++---------------------+
+| users               |
+| users2              |
++---------------------+
+2 rows in set (0.00 sec)
+
+mysql> drop table users; 
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> drop table users2;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> show tables;      
+Empty set (0.00 sec)
+
+mysql>\q
+Bye
+root@template /backup/mysql 16:43:38 # mysql -uroot -p7758521 daguanren < back4.sql 
+root@template /backup/mysql 16:43:44 # mysql -uroot -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 42
+Server version: 5.5.52-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use daguanren
+Database changed
+mysql> show tables;
++---------------------+
+| Tables_in_daguanren |
++---------------------+
+| users               |
+| users2              |
++---------------------+
+2 rows in set (0.00 sec)
+
+mysql>
+```
+### 5.4mysql的全库备份
+
+```sql
+mysqldump –u[user_name] –p[password] -A -B > [file_name]
+```
+```shell
+root@template /backup/mysql 16:49:25 # mysqldump -uroot -p7758521 -A -B > back5.sql
+-- Warning: Skipping the data of table mysql.event. Specify the --events option explicitly.
+root@template /backup/mysql 16:49:50 # mysql -uroot -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 45
+Server version: 5.5.52-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| daguanren          |
+| log                |
+| mysql              |
+| performance_schema |
+| test               |
++--------------------+
+6 rows in set (0.00 sec)
+mysql> drop database daguanren;         
+Query OK, 2 rows affected (0.03 sec)
+mysql> drop database test; 
+Query OK, 0 rows affected (0.00 sec)
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| log                |
+| mysql              |
+| performance_schema |
++--------------------+
+root@template /backup/mysql 16:53:09 # mysql -uroot -p7758521 < back5.sql 
+root@template /backup/mysql 16:53:34 # mysql -uroot -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 47
+Server version: 5.5.52-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| daguanren          |
+| log                |
+| mysql              |
+| performance_schema |
+| test               |
++--------------------+
+6 rows in set (0.00 sec)
+```
+## 六.MYSQL的多实例
+### 6.1建立目录
+```shell
+mkdir -p /data/{3306,3307}/data/log
+chown -R mysql.mysql /data
+```
+## 6.2建立多实例配置文件
+```conf
+#3306端口配置文件
+cat>/etc/my_3306.cnf<<EOF
+[client]								
+port = 3306							
+socket = /data/3306/mysql.socket		
+[mysqld]								
+server-id = 1							
+port = 3306							
+socket = /data/3306/mysql.socket		
+datadir = /data/3306/data 			
+pid-file = /data/3306/mysql.pid 		
+EOF
+#3307端口配置文件
+cat>/etc/my_3307.cnf<<EOF
+[client]								
+port = 3307							
+socket = /data/3307/mysql.socket		
+[mysqld]								
+server-id = 2							
+port = 3307							
+socket = /data/3307/mysql.socket		
+datadir = /data/3307/data 			
+pid-file = /data/3307/mysql.pid 		
+EOF
+```
+### 6.3初始化数据库
+```shell
+/usr/local/mysql/scripts/mysql_install_db --basedir=/usr/local/mysql --datadir=/data/3306/data --user=mysql
+/usr/local/mysql/scripts/mysql_install_db --basedir=/usr/local/mysql --datadir=/data/3307/data --user=mysql
+```
+### 6.4启动多实例
+```shell
+/usr/local/mysql/bin/mysqld_safe --defaults-file=/etc/my_3306.cnf 2>&1 > /dev/null &
+/usr/local/mysql/bin/mysqld_safe --defaults-file=/etc/my_3307.cnf 2>&1 > /dev/null &
+```
+### 6.5登录多实例
+```shell
+root@template /data/mysql 18:08:48 # mysql -S /data/3306/mysql.socket                         
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 2
+Server version: 5.5.52 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+#########################################
+root@template /data/mysql 18:12:07 # mysql -S /data/3307/mysql.socket 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 1
+Server version: 5.5.52 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+```
+### 6.6关闭多实例
+```shell
+root@template /data/mysql 18:14:19 # mysqladmin -uroot -p -S /data/3306/mysql.socket shutdown  
+Enter password: 
+root@template /data/mysql 18:14:28 # mysqladmin -uroot -p -S /data/3307/mysql.socket shutdown 
+Enter password: 
+root@template /data/mysql 18:14:35 #
+```
+## 七.MYSQL的主从同步
+### 7.1设置主库的ID和binlog
+```conf
+server-id = 1
+log-bin = /data/mysql/binlog
+```
+```shell
+root@template /data/mysql 19:07:50 # mkdir /data/mysql/binlog
+root@template /data/mysql 19:08:19 # chown -R mysql.mysql /data/
+```
+### 7.2创建用于主从同步的mysql用户
+```shell
+root@template /data/mysql 19:08:27 # mysql -uroot -p            
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 2
+Server version: 5.5.52-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> grant replication slave on *.* to slave@'%' identified by 'slave';
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> show grants for slave@'%';
++------------------------------------------------------------------------------------------------------------------+
+| Grants for slave@%                                                                                               |
++------------------------------------------------------------------------------------------------------------------+
+| GRANT REPLICATION SLAVE ON *.* TO 'slave'@'%' IDENTIFIED BY PASSWORD '*51125B3597BEE0FC43E0BCBFEE002EF8641B44CF' |
++------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+```
+### 7.3锁库锁表备份数据库并记录binlog
+```shell
+root@template /data/mysql 19:08:27 # mysql -uroot -p            
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 2
+Server version: 5.5.52-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> grant replication slave on *.* to slave@'%' identified by 'slave';
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> show grants for slave@'%';
++------------------------------------------------------------------------------------------------------------------+
+| Grants for slave@%                                                                                               |
++------------------------------------------------------------------------------------------------------------------+
+| GRANT REPLICATION SLAVE ON *.* TO 'slave'@'%' IDENTIFIED BY PASSWORD '*51125B3597BEE0FC43E0BCBFEE002EF8641B44CF' |
++------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> flush tables with read lock;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> \q
+Bye
+root@template /data/mysql 19:13:43 # mysqldump -uroot -p7758521 -A -B > all.sql
+-- Warning: Skipping the data of table mysql.event. Specify the --events option explicitly.
+root@template /data/mysql 19:14:10 # mysql -uroot -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 4
+Server version: 5.5.52-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> unlock tables;
+Query OK, 0 rows affected (0.00 sec)
+mysql> show master status;
++---------------+----------+--------------+------------------+
+| File          | Position | Binlog_Do_DB | Binlog_Ignore_DB |
++---------------+----------+--------------+------------------+
+| binlog.000001 |      107 |              |                  |
++---------------+----------+--------------+------------------+
+1 row in set (0.00 sec)
+```
+### 7.4从库导入数据
+```shell
+root@mysql01 ~ 11:22:01 # mysql -uroot -p7758521 < /tmp/all.sql
+mysql> select * from users; 
++----+-------------+
+| id | name        |
++----+-------------+
+|  1 | daguanren   |
+|  2 | xiaoguanren |
++----+-------------+
+2 rows in set (0.00 sec)
+
+mysql> select * from users2;
++----+--------------+
+| id | name         |
++----+--------------+
+|  1 | bigguanren   |
+|  2 | smallguanren |
++----+--------------+
+2 rows in set (0.00 sec)
+```
+### 7.5从库执行同步
+```sql
+CHANGE MASTER TO MASTER_HOST='master',MASTER_PORT=3306,MASTER_USER='slave',MASTER_PASSWORD='slave',MASTER_LOG_FILE='misql-bin.000003',MASTER_LOG_POS=318;
+mysql> CHANGE MASTER TO MASTER_HOST='192.168.44.11',MASTER_PORT=3306,MASTER_USER='slave',MASTER_PASSWORD='slave',MASTER_LOG_FILE='binlog.000001',MASTER_LOG_POS=107;
+Query OK, 0 rows affected, 2 warnings (0.17 sec)
+
+mysql> start slave;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> show slave status\G
+*************************** 1. row ***************************
+               Slave_IO_State: Waiting for master to send event
+                  Master_Host: 192.168.44.11
+                  Master_User: slave
+                  Master_Port: 3306
+                Connect_Retry: 60
+              Master_Log_File: binlog.000001
+          Read_Master_Log_Pos: 107
+               Relay_Log_File: mysql-relay-bin.000002
+                Relay_Log_Pos: 263
+        Relay_Master_Log_File: binlog.000001
+             Slave_IO_Running: Yes
+            Slave_SQL_Running: Yes
+              Replicate_Do_DB: 
+          Replicate_Ignore_DB: 
+           Replicate_Do_Table: 
+       Replicate_Ignore_Table: 
+      Replicate_Wild_Do_Table: 
+  Replicate_Wild_Ignore_Table: 
+                   Last_Errno: 0
+                   Last_Error: 
+                 Skip_Counter: 0
+          Exec_Master_Log_Pos: 107
+              Relay_Log_Space: 432
+              Until_Condition: None
+               Until_Log_File: 
+                Until_Log_Pos: 0
+           Master_SSL_Allowed: No
+           Master_SSL_CA_File: 
+           Master_SSL_CA_Path: 
+              Master_SSL_Cert: 
+            Master_SSL_Cipher: 
+               Master_SSL_Key: 
+        Seconds_Behind_Master: 0
+Master_SSL_Verify_Server_Cert: No
+                Last_IO_Errno: 0
+                Last_IO_Error: 
+               Last_SQL_Errno: 0
+               Last_SQL_Error: 
+  Replicate_Ignore_Server_Ids: 
+             Master_Server_Id: 1
+                  Master_UUID: 
+             Master_Info_File: /data/mysql/master.info
+                    SQL_Delay: 0
+          SQL_Remaining_Delay: NULL
+      Slave_SQL_Running_State: Slave has read all relay log; waiting for the slave I/O thread to update it
+           Master_Retry_Count: 86400
+                  Master_Bind: 
+      Last_IO_Error_Timestamp: 
+     Last_SQL_Error_Timestamp: 
+               Master_SSL_Crl: 
+           Master_SSL_Crlpath: 
+           Retrieved_Gtid_Set: 
+            Executed_Gtid_Set: 
+                Auto_Position: 0
+1 row in set (0.00 sec)
+```
+### 7.6验证
+#### 7.6.1主库插入数据
+```shell
+root@template /data 19:26:09 # mysql -uroot -p7758521
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 5
+Server version: 5.5.52-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use daguanren
+Database changed
+mysql> select * from users;       
++----+-------------+
+| id | name        |
++----+-------------+
+|  1 | daguanren   |
+|  2 | xiaoguanren |
++----+-------------+
+2 rows in set (0.00 sec)
+
+mysql> insert into users(name) values('yangzinan');              
+Query OK, 1 row affected (0.02 sec)
+
+mysql> select * from users;                        
++----+-------------+
+| id | name        |
++----+-------------+
+|  1 | daguanren   |
+|  2 | xiaoguanren |
+|  3 | yangzinan   |
++----+-------------+
+3 rows in set (0.00 sec)
+```
+### 7.6.2从库检测
+```sql
+mysql> use daguanren
+Database changed
+mysql> select * from users;
++----+-------------+
+| id | name        |
++----+-------------+
+|  1 | daguanren   |
+|  2 | xiaoguanren |
+|  3 | yangzinan   |
++----+-------------+
+3 rows in set (0.00 sec)
+```
+## 八.其他优化参数
+## 8.1.开启关闭事务自动提交
+```conf
+SET AUTOCOMMIT=0 #关闭自动提交
+SET AUTOCOMMIT=1 #开启自动提交
+```
+### 8.2.设置数据库只读
+```conf
+read-only
+注：对all权限用户无效
+```
+### 8.3.其他参数优化
+```conf
+innodb_buffer_pool_size = 物理内存的1/3或1/2一般不超过50%
+max_connections = 100 #最大连接数，此值最大16384
+long_query_time = 2 #记录超过两秒的sql语句
+long-slow-queries = /data/mysql/slow.log  #记录超过两秒的sql语句
+log-error = /data/mysql/error.log  #错误日志
+expire_logs_days = 7 #binlog保存时间
+skip-name-resolve  #解决连接失败
+innodb_data_file_path = ibdata1:10M: ibdata2:10M:autoextend  #InnoDB数据文件初始化大小，本例10M
+```
 
 
 
