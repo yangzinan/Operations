@@ -272,7 +272,7 @@ mysql> select user,host from mysql.user;
 ```
 * 权限的刷新
 
-	`目前我们创建的用户已经可以直接生效，但是mysql官方建议创建完成用户后要刷新权限表，所以生产环境为了避免意外的出现我们还是执行刷新权限`
+`目前我们创建的用户已经可以直接生效，但是mysql官方建议创建完成用户后要刷新权限表，所以生产环境为了避免意外的出现我们还是执行刷新权限`
 
 ```shell
 mysql> flush privileges;
@@ -371,6 +371,7 @@ mysql> show tables;
 mysql>
 ```
 * 创建数据库和表
+
 `create database [database_name];
 create table 表名(id int(4)   #创建表 id 整数型
                   not null   #id不可谓空
@@ -404,6 +405,7 @@ mysql> desc users;
 2 rows in set (0.01 sec)
 ```
 * 插入数据
+
 `insert into [table_name]( field,…) values(value….);`
 ```shell
 mysql> insert into users(name) values('daguanren');
@@ -418,6 +420,7 @@ mysql> select * from users;
 1 row in set (0.03 sec)
 ```
 * 修改数据
+
 `updata [table_name] set [field]=[value] ……`
 ```shell
 mysql> insert into users(name) values('xiaoguanren');           
