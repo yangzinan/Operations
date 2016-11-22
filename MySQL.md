@@ -230,11 +230,12 @@ mysql> select user,host from mysql.user;
 ```
 #### 4.2.2创建用户
 * 创建用的语句和权限
-	`grant [grants] on '[database_name]'.'[table_name]' to [user_name]@[hostname] identified by '[password]';`
 
-	`grants是要赋予的权限（权限见下表） database_name 是数据库的名称 user_name是用户名 host_name是主机名 最后是密码`
+`grant [grants] on '[database_name]'.'[table_name]' to [user_name]@[hostname] identified by '[password]';`
+
+`grants是要赋予的权限（权限见下表） database_name 是数据库的名称 user_name是用户名 host_name是主机名 最后是密码`
 	
-	`权限列表`
+`权限列表`
 ```conf
     SELECT                     --查询
 	UPDATE                     --更新，修改表内容
