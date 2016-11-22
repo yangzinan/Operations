@@ -404,6 +404,7 @@ mysql> desc users;
 2 rows in set (0.01 sec)
 ```
 * 插入数据
+
 `insert into [table_name]( field,…) values(value….);`
 ```shell
 mysql> insert into users(name) values('daguanren');
@@ -418,6 +419,7 @@ mysql> select * from users;
 1 row in set (0.03 sec)
 ```
 * 修改数据
+
 `updata [table_name] set [field]=[value] ……`
 ```shell
 mysql> insert into users(name) values('xiaoguanren');           
