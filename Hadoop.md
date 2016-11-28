@@ -153,7 +153,7 @@ cp mapred-site.xml.template mapred-site.xml
 <!-- Site specific YARN configuration properties -->
 	<!--表示MR applicatons所使用的shuffle工具类-->
 	<property>
-		<name>yarn.nademanager.aux-services</name>
+		<name>yarn.nodemanager.aux-services</name>
 		<value>mapreduce_shuffle</value>
 	</property>
 
