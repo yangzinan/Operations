@@ -9,6 +9,7 @@
 #### 1.1关闭iptables和selinux
 ```shell
 service iptables stop
+chkconfig iptables off
 setenforce 0
 sed -i 's#SELINUX=enforcing#SELINUX=disable#g' /etc/selinux/config
 ```
