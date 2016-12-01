@@ -795,6 +795,16 @@ cp mapred-site.xml.template mapred-site.xml
 	   <name>yarn.resourcemanager.hostname.rm2</name>
 	   <value>node4</value>
 	</property>
+	<!-- 配置自动切换 -->
+	<property>
+		<name>yarn.resourcemanager.recovery.enabled</name>
+		<value>true</value>
+	</property>
+	<!-- 配置使用zk -->
+	<property>
+		<name>yarn.resourcemanager.store.class</name>
+		<value>org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore</value>
+	</property>
 	<!-- 指定zk集群地址 -->
 	<property>
 	   <name>yarn.resourcemanager.zk-address</name>
