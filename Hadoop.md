@@ -298,8 +298,8 @@ starting yarn daemons
 starting resourcemanager, logging to /usr/local/hadoop-2.7.3/logs/yarn-root-resourcemanager-localhost.out
 localhost: starting nodemanager, logging to /usr/local/hadoop-2.7.3/logs/yarn-root-nodemanager-localhost.out
 ```
-## 三.验证
-### 1.通过JAVA进程验证
+### 3.验证
+#### 3.1通过JAVA进程验证
 ```shell
 root@localhost /usr/local/hadoop/etc/hadoop 22:13:39 # jps
 6689 NodeManager
@@ -310,7 +310,7 @@ root@localhost /usr/local/hadoop/etc/hadoop 22:13:39 # jps
 6591 ResourceManager
 root@localhost /usr/local/hadoop/etc/hadoop 22:13:44 # 
 ```
-### 2.端口验证
+### 3.2端口验证
 ```shell
 root@localhost /usr/local/hadoop/etc/hadoop 22:16:40 # netstat -ntlup | grep java
 tcp        0      0 0.0.0.0:50020               0.0.0.0:*                   LISTEN      6279/java           
@@ -329,7 +329,7 @@ tcp        0      0 :::8040                     :::*                        LIST
 tcp        0      0 :::8042                     :::*                        LISTEN      6689/java           
 tcp        0      0 ::ffff:127.0.0.1:8088       :::*                        LISTEN      6591/java           
 ```
-### 3.浏览器验证
+### 3.3浏览器验证
 
 * yarn管理界面
 
@@ -339,7 +339,7 @@ tcp        0      0 ::ffff:127.0.0.1:8088       :::*                        LIST
 
 ![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/hadoop/02.png?raw=true)
 
-### 二.完全分布式
+## 二.完全分布式
 
 ### 2.1实验部署环境
 
