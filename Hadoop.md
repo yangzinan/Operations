@@ -1075,5 +1075,283 @@ active  #活动
 standby #备用
 [root@node1 hadoop]# 
 ```
+### 3.验证使用
+#### 3.1验证hdfs上传文件
+```shell
+[root@node1 hadoop]# hadoop fs -put /etc/profile /profile
 
+[root@node1 hadoop]# 
+[root@node1 hadoop]# hadoop fs -ls /
+Found 2 items
+-rw-r--r--   3 root supergroup       2311 2016-12-01 22:43 /profile #上传成功
+drwxr-xr-x   - root supergroup          0 2016-12-01 22:09 /usr
+```
+#### 3.2验证yran
+```shell
+[root@node1 hadoop]# hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount /profile /out    
+16/12/01 22:50:15 INFO input.FileInputFormat: Total input paths to process : 1
+16/12/01 22:50:15 INFO mapreduce.JobSubmitter: number of splits:1
+16/12/01 22:50:15 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1480601841303_0001
+16/12/01 22:50:16 INFO impl.YarnClientImpl: Submitted application application_1480601841303_0001
+16/12/01 22:50:16 INFO mapreduce.Job: The url to track the job: http://node3:8088/proxy/application_1480601841303_0001/
+16/12/01 22:50:16 INFO mapreduce.Job: Running job: job_1480601841303_0001
+16/12/01 22:51:04 INFO mapreduce.Job: Job job_1480601841303_0001 running in uber mode : false
+16/12/01 22:51:04 INFO mapreduce.Job:  map 0% reduce 0%
+16/12/01 22:51:40 INFO mapreduce.Job:  map 100% reduce 0%
+16/12/01 22:52:00 INFO mapreduce.Job:  map 100% reduce 100%
+16/12/01 22:52:01 INFO mapreduce.Job: Job job_1480601841303_0001 completed successfully
+16/12/01 22:52:01 INFO mapreduce.Job: Counters: 49
+        File System Counters
+                FILE: Number of bytes read=2572
+                FILE: Number of bytes written=247013
+                FILE: Number of read operations=0
+                FILE: Number of large read operations=0
+                FILE: Number of write operations=0
+                HDFS: Number of bytes read=2394
+                HDFS: Number of bytes written=1906
+                HDFS: Number of read operations=6
+                HDFS: Number of large read operations=0
+                HDFS: Number of write operations=2
+        Job Counters 
+                Launched map tasks=1
+                Launched reduce tasks=1
+                Data-local map tasks=1
+                Total time spent by all maps in occupied slots (ms)=32441
+                Total time spent by all reduces in occupied slots (ms)=17945
+                Total time spent by all map tasks (ms)=32441
+                Total time spent by all reduce tasks (ms)=17945
+                Total vcore-milliseconds taken by all map tasks=32441
+                Total vcore-milliseconds taken by all reduce tasks=17945
+                Total megabyte-milliseconds taken by all map tasks=33219584
+                Total megabyte-milliseconds taken by all reduce tasks=18375680
+        Map-Reduce Framework
+                Map input records=86
+                Map output records=275
+                Map output bytes=3155
+                Map output materialized bytes=2572
+                Input split bytes=83
+                Combine input records=275
+                Combine output records=165
+                Reduce input groups=165
+                Reduce shuffle bytes=2572
+                Reduce input records=165
+                Reduce output records=165
+                Spilled Records=330
+                Shuffled Maps =1
+                Failed Shuffles=0
+                Merged Map outputs=1
+                GC time elapsed (ms)=219
+                CPU time spent (ms)=1960
+                Physical memory (bytes) snapshot=295219200
+                Virtual memory (bytes) snapshot=3747471360
+                Total committed heap usage (bytes)=138731520
+        Shuffle Errors
+                BAD_ID=0
+                CONNECTION=0
+                IO_ERROR=0
+                WRONG_LENGTH=0
+                WRONG_MAP=0
+                WRONG_REDUCE=0
+        File Input Format Counters 
+                Bytes Read=2311
+        File Output Format Counters 
+                Bytes Written=1906
+[root@node1 hadoop]# hadoop fs -ls /out
+Found 2 items
+-rw-r--r--   3 root supergroup          0 2016-12-01 22:51 /out/_SUCCESS
+-rw-r--r--   3 root supergroup       1906 2016-12-01 22:51 /out/part-r-00000
+[root@node1 hadoop]# hadoop fs -cat /out/part-r-00000  #已得到计算结果
+!=      1
+"$-"    1
+"$2"    1
+"$EUID" 2
+"$HISTCONTROL"  1
+"$i"    3
+"${-#*i}"       1
+"0"     1
+":${PATH}:"     1
+"`id    2
+"after" 1
+"ignorespace"   1
+#       13
+$UID    1
+&&      1
+()      1
+*)      1
+*:"$1":*)       1
+-f      1
+-gn`"   1
+-gt     1
+-r      1
+-ru`    1
+-u`     1
+-un`"   2
+-x      1
+-z      1
+.       2
+/etc/bashrc     1
+/etc/profile    1
+/etc/profile.d/ 1
+/etc/profile.d/*.sh     1
+/sbin   2
+/usr/bin/id     1
+/usr/local/sbin 2
+/usr/sbin       2
+/usr/share/doc/setup-*/uidgid   1
+002     1
+022     1
+199     1
+200     1
+2>&1    1
+2>/dev/null`    1
+;       3
+;;      1
+=       4
+>/dev/null      1
+By      1
+CLASSPATH=.:$JAVA_HOME/lib/dt.jar:/usr/local/jdk//lib/tools.jar 1
+Current 1
+EUID=`id        1
+Functions       1
+GREP_COLOR='1;33'       1
+GREP_OPTIONS='--color=auto'     1
+HADOOP_HOME=/usr/local/hadoop/  1
+HISTCONTROL     1
+HISTCONTROL=ignoreboth  1
+HISTCONTROL=ignoredups  1
+HISTSIZE        1
+HISTSIZE=1000   1
+HOSTNAME        1
+HOSTNAME=`/bin/hostname 1
+It's    2
+JAVA_HOME=/usr/local/jdk/       1
+LC_ALL=C        1
+LOGNAME 1
+LOGNAME=$USER   1
+MAIL    1
+MAIL="/var/spool/mail/$USER"    1
+MAILCHECK       1
+NOT     1
+PATH    1
+PATH=$1:$PATH   1
+PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:/usr/local/jdk//bin:/usr/local/jdk//bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/root/bin 1
+PATH=$JAVA_HOME/bin:/usr/local/jdk//bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin  1
+PATH=$PATH:$1   1
+Path    1
+System  1
+This    1
+UID=`id 1
+USER    1
+USER="`id       1
+You     1
+[       9
+]       3
+];      6
+a       2
+after   3
+aliases 1
+and     2
+are     1
+as      1
+better  1
+case    1
+change  1
+changes 1
+check   1
+could   1
+create  1
+custom  1
+custom.sh       1
+default,        1
+do      1
+doing.  1
+done    1
+else    5
+environment     1
+environment,    1
+esac    1
+export  10
+fi      8
+file    2
+for     5
+future  1
+get     1
+go      1
+good    1
+i       2
+idea    1
+if      8
+in      6
+is      1
+it      1
+know    1
+ksh     1
+login   2
+make    1
+manipulation    1
+merging 1
+much    1
+need    1
+pathmunge       8
+prevent 1
+programs,       1
+reservation     1
+reserved        1
+script  1
+set.    1
+sets    1
+setup   1
+shell   2
+startup 1
+system  1
+the     1
+then    8
+this    2
+threshold       1
+to      5
+uid/gids        1
+uidgid  1
+umask   3
+unless  1
+unset   3
+updates.        1
+validity        1
+want    1
+we      1
+what    1
+wide    1
+will    1
+workaround      1
+you     2
+your    1
+{       1
+}       1
+```
+#### 3.3hdfs的HA验证
+* 杀死node1上NameNode进程
+```shell
+[root@node1 hadoop]# jps
+3597 Jps
+2413 NameNode
+2703 DFSZKFailoverController
+[root@node1 hadoop]# kill -9 2413
+[root@node1 hadoop]# jps
+3607 Jps
+2703 DFSZKFailoverController
+```
 
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/hadoop/05.png?raw=true)
+
+	如图node2已经变为活跃状态
+#### 3.4沿着resoucemanager的HA
+
+* 杀死node3上的resoucemanager
+```shell
+[root@node3 hadoop]# jps          
+3873 Jps
+3631 ResourceManager
+[root@node3 hadoop]# kill -9 3631
+[root@node3 hadoop]# yarn rmadmin -getServiceState rm2 #rm2即node4已经变为活跃
+active
+[root@node3 hadoop]# 
+``` 
