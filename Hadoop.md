@@ -5,15 +5,15 @@
 
 #### QQ:375739049
 ## 一·伪分布式
-### 1.环境准备
-#### 1.1关闭iptables和selinux
+### 1.1环境准备
+#### 1.1.1关闭iptables和selinux
 ```shell
 service iptables stop
 chkconfig iptables off
 setenforce 0
 sed -i 's#SELINUX=enforcing#SELINUX=disable#g' /etc/selinux/config
 ```
-#### 1.2安装JDK
+#### 1.1.2安装JDK
 ```shell
 tar zxf jdk-8u71-linux-x64.tar.gz
 mv jdk1.8.0_71 /usr/local/jdk1.8.0_71
@@ -25,17 +25,17 @@ export CLASSPATH=.:/usr/local/jdk/lib/dt.jar:/usr/local/jdk/lib/tools.jar
 EOF
 source /etc/profile
 ```
-### 2.安装hadoop
-#### 2.1解压
+### 1.2安装hadoop
+#### 1.2.1解压
 ```shell
 tar zxf hadoop-2.7.3.tar.gz -C /usr/local
 ln -s /usr/local/hadoop-2.7.3 /usr/local/hadoop
 ```
-#### 2.2配置JAVA_HOME
+#### 1.2.2配置JAVA_HOME
 ```shell
 sed -i "s#export JAVA_HOME=\${JAVA_HOME}#export JAVA_HOME=$JAVA_HOME#g" /usr/local/hadoop/etc/hadoop/hadoop-env.sh
 ```
-#### 2.3 修改vim core-site.xml
+#### 1.2.3 修改vim core-site.xml
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
@@ -69,7 +69,7 @@ sed -i "s#export JAVA_HOME=\${JAVA_HOME}#export JAVA_HOME=$JAVA_HOME#g" /usr/loc
 	</property>
 </configuration>
 ```
-#### 2.3修改hdfs-site.xml
+#### 1.2.4修改hdfs-site.xml
 ```xml
  <?xml version="1.0" encoding="UTF-8"?>
  <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
@@ -97,7 +97,7 @@ sed -i "s#export JAVA_HOME=\${JAVA_HOME}#export JAVA_HOME=$JAVA_HOME#g" /usr/loc
 	</property>
  </configuration>
 ```
-#### 2.4 配置mapred-site.xml
+#### 1.2.5配置mapred-site.xml
 * 使用模板创建一个mapred-site.xml
 
 ```shell
@@ -133,7 +133,7 @@ cp mapred-site.xml.template mapred-site.xml
 	</property>
 </configuration>
 ```
-#### 2.5配置yarn-site.xml 
+#### 1.2.6配置yarn-site.xml 
 ```xml
 <?xml version="1.0"?>
 <!--
@@ -165,7 +165,7 @@ cp mapred-site.xml.template mapred-site.xml
 	</property>
 </configuration>
 ```
-#### 2.6配置环境变量
+#### 1.2.7配置环境变量
 ```shell
 cat >>/etc/profile<<EOF
 export HADOOP_HOME=/usr/local/hadoop
@@ -173,7 +173,7 @@ PATH=\$HADOOP_HOME/bin:\$HADOOP_HOME/sbin:$PATH
 EOF
 source /etc/profile
 ```
-#### 2.7格式化文件系统（hdfs）
+#### 1.2.8格式化文件系统（hdfs）
 ```shell
 root@localhost /usr/local/hadoop 21:49:38 # hdfs namenode -format
 16/11/28 21:49:44 INFO namenode.NameNode: STARTUP_MSG: 
@@ -247,7 +247,7 @@ Formatting using clusterid: CID-e13c760e-f908-4f67-aae2-84ea36afe690
 SHUTDOWN_MSG: Shutting down NameNode at localhost/127.0.0.1
 ************************************************************/
 ```
-#### 2.8启动hadoop
+#### 1.2.9启动hadoop
 * 配置免密钥登录
 
 ```shell
@@ -298,8 +298,8 @@ starting yarn daemons
 starting resourcemanager, logging to /usr/local/hadoop-2.7.3/logs/yarn-root-resourcemanager-localhost.out
 localhost: starting nodemanager, logging to /usr/local/hadoop-2.7.3/logs/yarn-root-nodemanager-localhost.out
 ```
-### 3.验证
-#### 3.1通过JAVA进程验证
+### 1.3.验证
+#### 1.3.1通过JAVA进程验证
 ```shell
 root@localhost /usr/local/hadoop/etc/hadoop 22:13:39 # jps
 6689 NodeManager
@@ -310,7 +310,7 @@ root@localhost /usr/local/hadoop/etc/hadoop 22:13:39 # jps
 6591 ResourceManager
 root@localhost /usr/local/hadoop/etc/hadoop 22:13:44 # 
 ```
-### 3.2端口验证
+### 1.3.2端口验证
 ```shell
 root@localhost /usr/local/hadoop/etc/hadoop 22:16:40 # netstat -ntlup | grep java
 tcp        0      0 0.0.0.0:50020               0.0.0.0:*                   LISTEN      6279/java           
@@ -329,7 +329,7 @@ tcp        0      0 :::8040                     :::*                        LIST
 tcp        0      0 :::8042                     :::*                        LISTEN      6689/java           
 tcp        0      0 ::ffff:127.0.0.1:8088       :::*                        LISTEN      6591/java           
 ```
-### 3.3浏览器验证
+### 1.3.3浏览器验证
 
 * yarn管理界面
 
@@ -1075,8 +1075,8 @@ active  #活动
 standby #备用
 [root@node1 hadoop]# 
 ```
-### 3.验证使用
-#### 3.1验证hdfs上传文件
+### 2.6.验证使用
+#### 2.6.1验证hdfs上传文件
 ```shell
 [root@node1 hadoop]# hadoop fs -put /etc/profile /profile
 
@@ -1086,7 +1086,7 @@ Found 2 items
 -rw-r--r--   3 root supergroup       2311 2016-12-01 22:43 /profile #上传成功
 drwxr-xr-x   - root supergroup          0 2016-12-01 22:09 /usr
 ```
-#### 3.2验证yran
+#### 2.6.2验证yran
 ```shell
 [root@node1 hadoop]# hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount /profile /out    
 16/12/01 22:50:15 INFO input.FileInputFormat: Total input paths to process : 1
@@ -1327,7 +1327,7 @@ your    1
 {       1
 }       1
 ```
-#### 3.3hdfs的HA验证
+#### 2.6.3hdfs的HA验证
 * 杀死node1上NameNode进程
 ```shell
 [root@node1 hadoop]# jps
@@ -1343,7 +1343,7 @@ your    1
 ![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/hadoop/05.png?raw=true)
 
 	如图node2已经变为活跃状态
-#### 3.4沿着resoucemanager的HA
+#### 2.6.4沿着resoucemanager的HA
 
 * 杀死node3上的resoucemanager
 ```shell
