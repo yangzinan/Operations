@@ -1343,7 +1343,7 @@ your    1
 ![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/hadoop/05.png?raw=true)
 
 	如图node2已经变为活跃状态
-#### 2.6.4沿着resoucemanager的HA
+#### 2.6.4验证resoucemanager的HA
 
 * 杀死node3上的resoucemanager
 ```shell
