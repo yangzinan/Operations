@@ -27,7 +27,7 @@ Nagios的功能是监控服务和主机，但是他自身并不包括这部分�
 Nagios提供了许多插件，利用这些插件可以方便的监控很多服务状态。安装完成后，在nagios主目录下的/libexec里放有nagios自带的可以使用的所有插件，如，check_disk是检查磁盘空间的插件，check_load是检查CPU负载的，等等。每一个插件可以通过运行./check_xxx –h 来查看其使用方法和功能。
 Nagios可以识别4种状态返回信息，即 0(OK)表示状态正常/绿色、1(WARNING)表示出现警告/黄色、2(CRITICAL)表示出现非常严重的错误/红色、3(UNKNOWN)表示未知错误/深黄色。Nagios根据插件返回来的值，来判断监控对象的状态，并通过web显示出来，以供管理员及时发现故障。
 
-## 四种监控状态
+`四种监控状态`
 
 ![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/nagios/01.jpg?raw=true)
 
@@ -44,3 +44,119 @@ Nagios 通过NRPE 来远端管理服务
 * 3. NRPE 运行本地的各种插件去检测本地的服务和状态(check_disk,..etc)
 * 4. 最后，NRPE 把检测的结果传给主机端的check_nrpe，check_nrpe 再把结果送到Nagios状态队列中。
 * 5. Nagios 依次读取队列中的信息，再把结果显示出来。
+
+## 四.NAGIOS服务端的安装部署
+### 4.1安装依赖添加用户
+```shell
+yum install  httpd php php-gd gcc glibc glibc-common gd gd-devel libjpeg-devel libpng-devel pango* libart_lgpl-devel pango-devel* cairo-devel* libxml2-devel libjpeg-devel libpng-devel php-gd gd-devel perl-GD libtoul-ltdl-devel rrdtool-perl perl-devel perl-ExtUtils-Embed perl-Time-HiRes mysql openssl* rrdtool sysstat mailx
+useradd nagios
+groupadd nagcmd    
+usermod -a -G nagcmd nagios
+usermod -a -G nagcmd apache
+```
+### 4.2编译安装nagios
+```shell
+tar zxf nagios-3.5.1.tar
+cd nagios-3.5.1
+./configure --with-command-group=nagcmd
+make all
+make install
+make install-init
+make install-commandmode
+make install-config
+make install-webconf
+cd ..
+```
+### 4.3安装nagios-plugins
+```shell
+tar zxf nagios-plugins-2.1.3.tar.gz
+cd nagios-plugins-2.1.3
+./configure --with-nagios-user=nagios --with-nagios-group=nagios --enable-perl-modules
+make && make install
+cd ..
+```
+`安装完成后会在/usr/local/nagios/libexec生成一些监控脚本`
+```shell
+root@template ~ 08:37:32 # ls /usr/local/nagios/libexec/ 
+check_apt       check_dummy         check_ifstatus  check_mrtgtraf  check_ntp_time  check_rpc      check_tcp     process_perfdata.pl
+check_breeze    check_file_age      check_imap      check_nagios    check_nwstat    check_sensors  check_time    urlize
+check_by_ssh    check_flexlm        check_ircd      check_nntp      check_oracle    check_simap    check_udp     utils.pm
+check_clamd     check_ftp           check_jabber    check_nntps     check_overcr    check_smtp     check_ups     utils.sh
+check_cluster   check_http          check_load      check_nrpe      check_ping      check_spop     check_uptime
+check_dhcp      check_icmp          check_log       check_nt        check_pop       check_ssh      check_users
+check_disk      check_ide_smart     check_mailq     check_ntp       check_procs     check_ssmtp    check_wave
+check_disk_smb  check_ifoperstatus  check_mrtg      check_ntp_peer  check_real      check_swap     negate
+```
+### 4.4安装nrpe
+```shell
+tar zxf cd nrpe-2.15.tar.gz
+cd nrpe-2.15
+./configure
+make all
+make install-plugin
+make install-daemon
+make install-daemon-config
+cd ..
+```
+### 4.5安装pnp4
+```shell
+tar zxf pnp4nagios-0.6.6.tar.gz
+cd pnp4nagios-0.6.6
+./configure --prefix=/usr/local/pnp4nagios --with-nagios-user=nagios --with-nagios-group=nagcmd
+make all && make install
+make instal-webconf
+make instal-config
+make instal-init
+cp contrib/ssi/status-header.ssi /usr/local/nagios/share/ssi/
+cd /usr/local/pnp4nagios/etc
+mv misccommands.cfg-sample  misccommands.cfg
+mv nagios.cfg-sample  nagios.cfg
+mv npcd.cfg-sample npcd.cfg
+mv process_perfdata.cfg-sample  process_perfdata.cfg
+mv rra.cfg-sample rra.cfg
+cd /usr/local/pnp4nagios/etc/pages
+mv web_traffic.cfg-sample web_traffic.cfg
+cd ../check_commands
+mv check_all_local_disks.cfg-sample  check_all_local_disks.cfg
+mv check_nrpe.cfg-sample  check_nrpe.cfg
+mv check_nwstat.cfg-sample  check_nwstat.cfg
+cp /usr/local/pnp4nagios/libexec/process_perfdata.pl /usr/local/nagios/libexec/
+chmod 755 /usr/local/nagios/libexec/process_perfdata.pl
+chown -R nagios.nagios /usr/local/nagios/libexec/*
+mv /usr/local/pnp4nagios/share/install.php /usr/local/pnp4nagios/share/install.php.bak
+/etc/init.d/npcd restart
+cat>>/etc/httpd/conf/httpd.conf<<EOF
+<Directory "/usr/local/pnp4nagios/share">
+    AllowOverride None
+    Order allow,deny
+    Allow from all
+    AuthName "Nagios Access"
+    AuthType Basic
+    AuthUserFile /usr/local/nagios/etc/htpasswd.users
+    Require valid-user
+</Directory>
+EOF
+service httpd restart
+cd ..
+```
+### 4.6替换配置文件
+```shell
+\cp nagios.cfg /usr/local/nagios/etc/
+\cp commands.cfg /usr/local/nagios/etc/objects
+\cp templates.cfg /usr/local/nagios/etc/objects
+\cp hosts.cfg /usr/local/nagios/etc/objects
+\cp services.cfg /usr/local/nagios/etc/objects
+mkdir -p /usr/local/nagios/etc/objects/services
+sed -i 's#nagiosadmin#nagios#g' /usr/local/nagios/etc/cgi.cfg
+chown -R nagios.nagios /usr/local/nagios
+```
+### 4.7配置密码启动nagios
+```shell
+root@template /usr/local/pnp4nagios/etc 19:50:52 # htpasswd -cb /usr/local/nagios/etc/htpasswd.users nagios 7758521
+Adding password for user nagios
+root@template /usr/local/src 20:36:22 # /etc/init.d/nagios start 
+Starting nagios: done.
+```
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/nagios/03.jpg?raw=true)
+
