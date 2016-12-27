@@ -1,4 +1,4 @@
-﻿# MySQL
+# MySQL
 #### By：大官人
 #### Email：DaGuanR@gmail.com
 #### QQ：375739049
@@ -142,11 +142,14 @@ mysql>
 ### 4.1MySQL的登录
 #### 4.1.1设置MySQL的登录密码
 * 设置密码
+
 ```shell
 root@template /usr/local/mysql 16:38:55 # mysqladmin -uroot password '123456'
 root@template /usr/local/mysql 16:39:03 # mysql
 ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: NO)
+```
 #这时再登录MySQL就需要提供密码
+```shell
 root@template /usr/local/mysql 16:39:05 # mysql -uroot -p123456
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 6
@@ -163,6 +166,7 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 mysql>
 ```
 `当我们设置登录密码和使用密码登录的时候，为确保安全一般不希望显示出密码，所以我们一般采用如下方式`
+
 ```shell
 root@template /usr/local/mysql 16:42:56 # mysqladmin -uroot password   #使用互交方式
 New password: 
@@ -190,9 +194,11 @@ Enter password:
 New password: 
 Confirm new password:
 ```
+
 ### 4.2MySQL的用户权限管理
 #### 4.2.1用户的优化
 * 查看默认的用户和用户的介绍
+
 ```shell
 mysql> select user,host from mysql.user;   
 +------+-----------+
@@ -209,6 +215,7 @@ mysql> select user,host from mysql.user;
 #以上为mysql安装后默认创建的用户，mysql的用户是由两部分组成，用户名和主机名。所以显示的root有很多但是后面对应的主机名是不同的。
 ```
 * 删除多余的用户
+
 ```shell
 mysql> drop user 'root'@'::1';
 Query OK, 0 rows affected (0.04 sec)
@@ -230,6 +237,7 @@ mysql> select user,host from mysql.user;
 ```
 #### 4.2.2创建用户
 * 创建用的语句和权限
+
 	`grant [grants] on '[database_name]'.'[table_name]' to [user_name]@[hostname] identified by '[password]';`
 
 	`grants是要赋予的权限（权限见下表） database_name 是数据库的名称 user_name是用户名 host_name是主机名 最后是密码`
@@ -278,6 +286,7 @@ mysql> flush privileges;
 Query OK, 0 rows affected (0.01 sec)
 ```
 * 移出用户权限
+
 ```shell
 mysql> grant insert,update on *.* to znyang@'%' identified by '123456';  #先创建一个具有insert和update权限的用户
 Query OK, 0 rows affected (0.00 sec)
@@ -311,6 +320,7 @@ mysql>
 ```
 #### 4.2.3常用SQL语句
 * 查看数据
+
 ```shell
 mysql> show databases;
 +--------------------+
@@ -327,12 +337,14 @@ mysql> show databases;
 mysql>
 ```
 * 切换数据库
+
 ```shell
 mysql> use test
 Database changed
 mysql>
 ```
 * 查看数据库里面的表
+
 ```shell
 mysql> use mysql
 Database changed
@@ -370,6 +382,7 @@ mysql> show tables;
 mysql>
 ```
 * 创建数据库和表
+
 ```sql
 create database [database_name];
 create table 表名(id int(4)   #创建表 id 整数型
@@ -393,6 +406,7 @@ Query OK, 0 rows affected (0.01 sec)
 mysql>
 ```
 * 查看数据库的表结构
+
 ```shell
 mysql> desc users;
 +-------+----------+------+-----+---------+----------------+
@@ -406,6 +420,7 @@ mysql> desc users;
 * 插入数据
 
 `insert into [table_name]( field,…) values(value….);`
+
 ```shell
 mysql> insert into users(name) values('daguanren');
 Query OK, 1 row affected (0.01 sec)
@@ -421,6 +436,7 @@ mysql> select * from users;
 * 修改数据
 
 `updata [table_name] set [field]=[value] ……`
+
 ```shell
 mysql> insert into users(name) values('xiaoguanren');           
 Query OK, 1 row affected (0.00 sec)
@@ -473,6 +489,7 @@ mysql> select * from users;
 1 row in set (0.00 sec)
 ```
 * 其他
+
 ```sql
 #清除表中所有内容
 truncate table 表名;
@@ -517,6 +534,7 @@ ERROR 1046 (3D000) at line 22: No database selected
 root@template /backup/mysql 21:11:45 # mysql -uroot -p7758521 < back2.sql;
 ```
 **我们可以看到用方法1备份的文件还原失败了提示没有选在数据库，而用方法2备份的可以成功，我们对比一下俩个备份文件**
+
 ```shell
 root@template /backup/mysql 21:15:58 # diff back1.sql back2.sql 
 18a19,26
@@ -999,7 +1017,7 @@ mysql> show slave status\G
            Master_SSL_CA_File: 
            Master_SSL_CA_Path: 
               Master_SSL_Cert: 
-            Master_SSL_Cipher: 
+> 		* 1.             Master_SSL_Cipher: 
                Master_SSL_Key: 
         Seconds_Behind_Master: 0
 Master_SSL_Verify_Server_Cert: No
@@ -1101,7 +1119,6 @@ expire_logs_days = 7 #binlog保存时间
 skip-name-resolve  #解决连接失败
 innodb_data_file_path = ibdata1:10M: ibdata2:10M:autoextend  #InnoDB数据文件初始化大小，本例10M
 ```
-
 
 
 
