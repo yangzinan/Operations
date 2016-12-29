@@ -50,5 +50,49 @@ discovery.zen.minimum_master_nodes: [num] #配置集群主节点的个数
 useradd el
 chown -R el.el /usr/local/elasticsearch-5.1.1
 /usr/local/elasticsearch/bin/elasticsearch -d
-echo "/bin/su - el -c /usr/local/elasticsearch/bin/elasticsearch -d" >> /etc/rc.d/rc.local
+echo "/bin/su - el -c '/usr/local/elasticsearch/bin/elasticsearch -d'" >> /etc/rc.d/rc.local
+```
+
+# 六.安装head插件
+
+```shell
+yum install -y git npm
+cd /usr/local
+git clone https://github.com/mobz/elasticsearch-head.git
+echo "registry = https://registry.npm.taobao.org" > ~/.npmrc
+cd elasticsearch-head
+npm install
+npm install
+npm install -g grunt-cli
+echo "cd /usr/local/elasticsearch-head && nohup grunt server &" >> /etc/rc.d/rc.local
+```
+* 配置head(Gruntfile.js)
+
+```shell
+	server: {
+ 		options: {
+ 			port: 9100,
+ 			hostname: '0.0.0.0', #####添加这句。
+ 			base: '.',
+ 			keepalive: true
+ 		}
+ 	}
+ }
+```
+ 
+ * 配置el配置文件
+ 
+```conf 
+cat>>/usr/local/elasticsearch/config/elasticsearch.yml<<EOF
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+EOF
+kill $(jps | grep Elasticsearch | awk -F ' ' {'print $1'})
+/bin/su - el -c '/usr/local/elasticsearch/bin/elasticsearch -d'
+```
+
+* 启动head
+
+```shell
+nohup grunt server &
 ```
