@@ -29,7 +29,7 @@ ln -s /usr/local/elasticsearch-5.1.1 /usr/local/elasticsearch
 echo "vm.max_map_count= 262144" /etc/sysctl.conf
 sysctl -p
 cat>>/etc/security/limits.conf<<EOF
-*  hard nofile 65536* soft nofile 65536
+*  hard nofile 65536*  soft nofile 65536
 EOF
 sed -i "s#1024#2048#g" /etc/security/limits.d/90-nproc.conf
 ```
@@ -38,6 +38,7 @@ sed -i "s#1024#2048#g" /etc/security/limits.d/90-nproc.conf
 
 ```conf
 cluster.name: [cluster_name] #配置集群名称所有节点的配置必须一致
+node.name: [node_name] #在一个集群内nodename必须是唯一的
 network.host: [ipaddr|host] #配置IP地址或者主机名（本机的）
 discovery.zen.ping.unicast.hosts: ["[ip|host]", "[ip|host]", "ip|host"] #配置集群所有的节点的IP或主机名
 discovery.zen.minimum_master_nodes: [num] #配置集群主节点的个数
@@ -49,5 +50,5 @@ discovery.zen.minimum_master_nodes: [num] #配置集群主节点的个数
 useradd el
 chown -R el.el /usr/local/elasticsearch-5.1.1
 /usr/local/elasticsearch/bin/elasticsearch -d
-echo "/bin/su -el -c /usr/local/elasticsearch/bin/elasticsearch -d" >> /etc/rc.d/rc.local
+echo "/bin/su - el -c /usr/local/elasticsearch/bin/elasticsearch -d" >> /etc/rc.d/rc.local
 ```
