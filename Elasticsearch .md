@@ -94,5 +94,12 @@ kill $(jps | grep Elasticsearch | awk -F ' ' {'print $1'})
 * 启动head
 
 ```shell
-nohup grunt server &
+cd /usr/local/elasticsearch-head && nohup grunt server &
 ```
+
+# 七.安装x-pack
+
+```shell
+/usr/local/elasticsearch/bin/elasticsearch-plugin install file:///usr/local/src/x-pack-5.1.1.zip
+```
+
