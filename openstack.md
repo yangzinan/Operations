@@ -1,8 +1,54 @@
-# 一、基础包安装
+# 一、环境约定和基础包安装
+## 1.1环境约定
+* 提示：请先初步理解openstack的各组件功能，阅读此部署文档，文档中不做详细介绍。
+
+|     主机名    | 管理IP   |  私有ip  |  运行的进程  |
+| --------   | :-----:  | :----:  | ----- |
+|controller|10.0.10.10|---|---|
+|compute|10.0.10.20|10.0.20.20|---|
+|neutron|10.0.10.30|10.0.20.30|10.0.30.30|
+|cinder|10.0.10.40|10.0.20.40|---|
+## 1.2环境配置（在所有节点执行）
 ```shell
-yum install -y centos-release-openstack-mitaka python-openstackclient openstack-selinux ntp openstack-utils
+systemctl stop firewalld.service
+systemctl disable firewalld.service
+yum install -y wget
+mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.back
+wget http://mirrors.aliyun.com/repo/Centos-7.repo  -P /etc/yum.repos.d/
+mv /etc/yum.repos.d/Centos-7.repo /etc/yum.repos.d/CentOS-Base.repo
+rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-2.el7.elrepo.noarch.rpm
+yum install -y epel-release 
+yum install -y centos-release-openstack-mitaka
+sed -i "s@#baseurl@baseurl@g" /etc/yum.repos.d/epel.repo
+sed -i "s@mirrorlist@#mirrorlist@g"  /etc/yum.repos.d/epel.repo
+sed -i "s#http://download.fedoraproject.org/pub#https://mirrors.tuna.tsinghua.edu.cn#g" /etc/yum.repos.d/epel.repo
+sed -i "s#http://elrepo.org/linux#https://mirror.tuna.tsinghua.edu.cn/elrepo#g" /etc/yum.repos.d/elrepo.repo 
+yum clean all
+yum makecache
+yum install -y tree lrzsz nmap python-pip vim net-tools ntp iperf iftop screen zip unzip gcc gcc-c++ cmake
+yum install -y python-openstackclient openstack-selinux ntp openstack-utils
 systemctl start ntpd
 systemctl enable ntpd
+setenforce 0
+sed -i 's#SELINUX=enforcing#SELINUX=disable#g' /etc/selinux/config
+```
+## 1.3选择执行（可以不执行）
+```shell
+cp /etc/vimrc /etc/vimrc.back
+cat>>/etc/vimrc<<EOF
+set nu
+set tabstop=2
+set fileencodings=utf-8,ucs-bom,gb18030,gbk,gb2312,cp936
+set termencoding=utf-8
+set encoding=utf-8
+EOF
+. /etc/vimrc
+echo "export LC_ALL=C" >> /etc/profile
+echo "unset MAILCHECK" >> /etc/profile
+echo "export PS1='\[\e[31;1m\]\u@\[\e[34;1m\]\h \[\e[36;1m\]\w \[\e[33;1m\]\t # \[\e[37;1m\]'" >> /etc/profile
+echo "export GREP_OPTIONS='--color=auto' GREP_COLOR='1;33'" >> /etc/profile
+echo " *  -  nofile  65536" >> /etc/security/limits.conf
+source /etc/profile
 ```
 # 二、controller(控制节点)部署
 ## 2.1安装配置mysql
