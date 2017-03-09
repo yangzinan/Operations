@@ -2,12 +2,12 @@
 ## 1.1环境约定
 * 提示：请先初步理解openstack的各组件功能，阅读此部署文档，文档中不做详细介绍。
 
-|     主机名    | 管理IP   |  私有ip  |  运行的进程  |
-| --------   | :-----:  | :----:  | ----- |
-|controller|10.0.10.10|---|---|
-|compute|10.0.10.20|10.0.20.20|---|
-|neutron|10.0.10.30|10.0.20.30|10.0.30.30|
-|cinder|10.0.10.40|10.0.20.40|---|
+|     主机名    | 管理IP   |  私有ip  |  公有ip  |  操作系统  |
+| --------   | :-----:  | :----:  | ----- | ---- |
+|controller|eth0:10.0.10.10|---|---| CenOS7.2-x64  |
+|compute|eth0:10.0.10.20|eth1:10.0.20.20|---| CenOS7.2-x64  |
+|neutron|eth0:10.0.10.30|eth1:10.0.20.30|eth2:10.0.30.30| CenOS7.2-x64  |
+|cinder|eth0:10.0.10.40|eth1:10.0.20.40|---| CenOS7.2-x64  |
 ## 1.2环境配置（在所有节点执行）
 ```shell
 systemctl stop firewalld.service
@@ -493,4 +493,87 @@ systemctl start openstack-nova-api.service \
   openstack-nova-consoleauth.service openstack-nova-scheduler.service \
   openstack-nova-conductor.service openstack-nova-novncproxy.service
 
+```
+### 5.1.16验证
+```shell
+root@controller ~ 10:20:52 # openstack compute service list
++----+------------------+------------+----------+---------+-------+----------------------------+
+| Id | Binary           | Host       | Zone     | Status  | State | Updated At                 |
++----+------------------+------------+----------+---------+-------+----------------------------+
+|  1 | nova-conductor   | controller | internal | enabled | up    | 2017-03-09T02:21:25.000000 |
+|  2 | nova-consoleauth | controller | internal | enabled | up    | 2017-03-09T02:21:25.000000 |
+|  3 | nova-scheduler   | controller | internal | enabled | up    | 2017-03-09T02:21:25.000000 |
++----+------------------+------------+----------+---------+-------+----------------------------+
+root@controller ~ 10:21:31 # 
+```
+## 5.2计算节点安装（compute）
+### 5.2.1 安装nova-compute
+```shell
+yum install -y openstack-nova-compute
+```
+### 5.2.2配置rabbitmq链接
+```shell
+openstack-config --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit
+openstack-config --set /etc/nova/nova.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set /etc/nova/nova.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set /etc/nova/nova.conf oslo_messaging_rabbit rabbit_password openstack
+```
+### 5.2.3配置keystone认证
+```shell
+openstack-config --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_uri http://controller:5000
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_url http://controller:35357
+openstack-config --set /etc/nova/nova.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_type password
+openstack-config --set /etc/nova/nova.conf keystone_authtoken project_domain_name default
+openstack-config --set /etc/nova/nova.conf keystone_authtoken user_domain_name default
+openstack-config --set /etc/nova/nova.conf keystone_authtoken project_name service
+openstack-config --set /etc/nova/nova.conf keystone_authtoken username nova
+openstack-config --set /etc/nova/nova.conf keystone_authtoken password nova
+```
+### 5.2.4配置IP和网络
+```shell
+openstack-config --set /etc/nova/nova.conf DEFAULT my_ip 10.0.10.20
+openstack-config --set /etc/nova/nova.conf DEFAULT use_neutron True
+openstack-config --set /etc/nova/nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
+```
+### 5.2.5配置vnc
+```shell
+openstack-config --set /etc/nova/nova.conf vnc enabled True
+openstack-config --set /etc/nova/nova.conf vnc vncserver_listen 0.0.0.0
+openstack-config --set /etc/nova/nova.conf vnc vncserver_proxyclient_address $my_ip
+openstack-config --set /etc/nova/nova.conf vnc novncproxy_base_url http://controller:6080/vnc_auto.html
+```
+### 5.2.6配置glance
+```shell
+openstack-config --set /etc/nova/nova.conf glance api_servers http://controller:9292
+```
+### 5.2.7配置所路径
+```shell
+openstack-config --set /etc/nova/nova.conf oslo_concurrency lock_path /var/lib/nova/tmp
+```
+### 5.2.8配置硬件加速
+```shell
+egrep -c '(vmx|svm)' /proc/cpuinfo
+#如果返回0则执行下面命令非0不做任何操作
+openstack-config --set /etc/nova/nova.conf libvirt virt_type qemu
+```
+### 5.2.9启动nova-compute
+```shell
+systemctl enable libvirtd.service openstack-nova-compute.service
+systemctl start libvirtd.service openstack-nova-compute.service
+```
+### 5.2.10验证安装
+```shell
+#在controller节点执行
+root@controller ~ 11:10:24 # openstack compute service list      
++----+------------------+------------+----------+---------+-------+----------------------------+
+| Id | Binary           | Host       | Zone     | Status  | State | Updated At                 |
++----+------------------+------------+----------+---------+-------+----------------------------+
+|  1 | nova-conductor   | controller | internal | enabled | up    | 2017-03-09T03:10:46.000000 |
+|  2 | nova-consoleauth | controller | internal | enabled | up    | 2017-03-09T03:10:46.000000 |
+|  3 | nova-scheduler   | controller | internal | enabled | up    | 2017-03-09T03:10:55.000000 |
+|  6 | nova-compute     | compute    | nova     | enabled | up    | 2017-03-09T03:10:55.000000 |
++----+------------------+------------+----------+---------+-------+----------------------------+
+root@controller ~ 11:10:55 # 
 ```
