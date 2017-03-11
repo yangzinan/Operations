@@ -4,10 +4,10 @@
 
 |     主机名    | 管理IP   |  私有ip  |  公有ip  |  操作系统  |
 | --------   | :-----:  | :----:  | ----- | ---- |
-|controller|eth0:10.0.10.10|---|---| CenOS7.2-x64  |
-|compute|eth0:10.0.10.20|eth1:10.0.20.20|---| CenOS7.2-x64  |
-|neutron|eth0:10.0.10.30|eth1:10.0.20.30|eth2:10.0.30.30| CenOS7.2-x64  |
-|cinder|eth0:10.0.10.40|eth1:10.0.20.40|---| CenOS7.2-x64  |
+|controller|eth0:10.0.10.10|eth1:10.0.20.10|eth2:10.0.30.10| CenOS7.2-x64  |
+|compute|eth0:10.0.10.20|eth1:10.0.20.20|eth2:10.0.30.20| CenOS7.2-x64  |
+|cinder|eth0:10.0.10.30|eth1:10.0.20.30|---| CenOS7.2-x64  |
+
 ## 1.2环境配置（在所有节点执行）
 ```shell
 systemctl stop firewalld.service
@@ -22,7 +22,8 @@ yum install -y centos-release-openstack-mitaka
 sed -i "s@#baseurl@baseurl@g" /etc/yum.repos.d/epel.repo
 sed -i "s@mirrorlist@#mirrorlist@g"  /etc/yum.repos.d/epel.repo
 sed -i "s#http://download.fedoraproject.org/pub#https://mirrors.tuna.tsinghua.edu.cn#g" /etc/yum.repos.d/epel.repo
-sed -i "s#http://elrepo.org/linux#https://mirror.tuna.tsinghua.edu.cn/elrepo#g" /etc/yum.repos.d/elrepo.repo 
+sed -i "s#http://elrepo.org/linux#https://mirror.tuna.tsinghua.edu.cn/elrepo#g" /etc/yum.repos.d/elrepo.repo
+sed -i "s#mirror.centos.org#mirrors.163.com#g" /etc/yum.repos.d/CentOS-OpenStack-mitaka.repo 
 yum clean all
 yum makecache
 yum install -y tree lrzsz nmap python-pip vim net-tools ntp iperf iftop screen zip unzip gcc gcc-c++ cmake
@@ -357,7 +358,7 @@ openstack-config --set /etc/glance/glance-api.conf glance_store filesystem_store
 ```
 ### 5.配置glance-registry的数据库连接
 ```shell
-openstack-config --set /etc/glance/glance-registry.conf database connection mysql+pymysql://glance:glance@controller/glance
+openstack-config --set /etc/glance/glance-registry.conf database connection mysql+pymysql://glance:openstack@controller/glance
 ```
 ### 6.配置glance-registry的认证
 ```shell
@@ -471,8 +472,8 @@ openstack-config --set /etc/nova/nova.conf DEFAULT firewall_driver nova.virt.fir
 ```
 ### 5.1.12配置vnc和glance
 ```shell
-openstack-config --set /etc/nova/nova.conf vnc vncserver_listen $my_ip
-openstack-config --set /etc/nova/nova.conf vnc vncserver_proxyclient_address $my_ip
+openstack-config --set /etc/nova/nova.conf vnc vncserver_listen 10.0.10.10
+openstack-config --set /etc/nova/nova.conf vnc vncserver_proxyclient_address 10.0.10.10
 openstack-config --set /etc/nova/nova.conf glance api_servers http://controller:9292
 ```
 ### 5.1.13配置锁路径
@@ -541,7 +542,7 @@ openstack-config --set /etc/nova/nova.conf DEFAULT firewall_driver nova.virt.fir
 ```shell
 openstack-config --set /etc/nova/nova.conf vnc enabled True
 openstack-config --set /etc/nova/nova.conf vnc vncserver_listen 0.0.0.0
-openstack-config --set /etc/nova/nova.conf vnc vncserver_proxyclient_address $my_ip
+openstack-config --set /etc/nova/nova.conf vnc vncserver_proxyclient_address 10.0.10.20
 openstack-config --set /etc/nova/nova.conf vnc novncproxy_base_url http://controller:6080/vnc_auto.html
 ```
 ### 5.2.6配置glance
@@ -576,4 +577,111 @@ root@controller ~ 11:10:24 # openstack compute service list
 |  6 | nova-compute     | compute    | nova     | enabled | up    | 2017-03-09T03:10:55.000000 |
 +----+------------------+------------+----------+---------+-------+----------------------------+
 root@controller ~ 11:10:55 # 
+```
+# 六、安装网络服务（neutron）
+## 6.1安装控制节点（controller）
+### 6.1.2创建数据库
+```shell
+mysql -uroot -popenstack -e"CREATE DATABASE neutron;:
+mysql -uroot -popenstack -e"GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'controller' IDENTIFIED BY 'openstack';"
+mysql -uroot -popenstack -e"GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' IDENTIFIED BY 'openstack';"
+```
+### 6.1.2创建neutron用户
+```shell
+openstack user create --domain default --password-prompt neutron
+```
+### 6.1.3添加admin角色到neutron角色
+```shell
+openstack role add --project service --user neutron admin
+```
+### 6.1.4创建neutron服务
+```shell
+openstack service create --name neutron --description "OpenStack Networking" network
+```
+### 6.1.5创建neutron的api
+```shell
+openstack endpoint create --region RegionOne network public http://controller:9696
+openstack endpoint create --region RegionOne network internal http://controller:9696
+openstack endpoint create --region RegionOne network admin http://controller:9696
+```
+### 6.1.6安装相关组件
+```shell
+yum install openstack-neutron openstack-neutron-ml2 openstack-neutron-linuxbridge ebtables
+```
+### 6.1.7配置数据库连接
+```shell
+openstack-config --set /etc/neutron/neutron.conf database connection mysql+pymysql://neutron:openstack@controller/neutron
+```
+### 6.1.8配置使用ml2插件
+```shell
+openstack-config --set /etc/neutron/neutron.conf DEFAULT core_plugin ml2
+openstack-config --set /etc/neutron/neutron.conf DEFAULT service_plugins router
+openstack-config --set /etc/neutron/neutron.conf DEFAULT allow_overlapping_ips True
+```
+### 6.1.9配置rabbitmq
+```shell
+openstack-config --set /etc/neutron/neutron.conf DEFAULT rpc_backend rabbit
+openstack-config --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_password openstack
+```
+### 6.1.10配置keystone
+```shell
+openstack-config --set /etc/neutron/neutron.conf DEFAULT auth_strategy keystone
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken auth_uri http://controller:5000
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken auth_url http://controller:35357
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken auth_type password
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken project_domain_name default
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken user_domain_name default
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken project_name service
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken username neutron
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken password neutron
+```
+### 6.1.11配置nova
+```shell
+openstack-config --set /etc/neutron/neutron.conf DEFAULT notify_nova_on_port_status_changes True
+openstack-config --set /etc/neutron/neutron.conf DEFAULT notify_nova_on_port_data_changes True
+openstack-config --set /etc/neutron/neutron.conf nova auth_url http://controller:35357
+openstack-config --set /etc/neutron/neutron.conf nova auth_type password
+openstack-config --set /etc/neutron/neutron.conf nova project_domain_name default
+openstack-config --set /etc/neutron/neutron.conf nova user_domain_name default
+openstack-config --set /etc/neutron/neutron.conf nova region_name RegionOne
+openstack-config --set /etc/neutron/neutron.conf nova project_name service
+openstack-config --set /etc/neutron/neutron.conf nova username nova
+openstack-config --set /etc/neutron/neutron.conf nova password nova
+```
+###  6.1.12配置锁路径
+```shell
+openstack-config --set /etc/neutron/neutron.conf oslo_concurrency lock_path /var/lib/neutron/tmp
+```
+### 6.1.13配置ml2
+```shell
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 type_drivers flat,vlan,vxlan
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 tenant_network_types vxlan
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 mechanism_drivers linuxbridge,l2population
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 extension_drivers port_security
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2_type_flat flat_networks provider
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2_type_vxlan vni_ranges 1:1000
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup enable_ipset True
+```
+###  6.1.14配置Linuxbridge代理
+```shell
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini linux_bridge physical_interface_mappings provider:eth2
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini vxlan enable_vxlan True
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini vxlan local_ip 10.0.20.10
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini vxlan l2_population True
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini securitygroup enable_security_group True
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+```
+### 6.1.15配置DHCP代理
+```shell
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT enable_isolated_metadata True
+```
+###  6.1.16配置layer－3代理
+```shell
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT external_network_bridge 
 ```
