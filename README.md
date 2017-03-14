@@ -1,5 +1,7 @@
 # 运维知识文档
-## By：大官人 QQ：375739049 Email：DaGuanR@gmail.com
+## By：大官人 
+## QQ：375739049 
+## Email：DaGuanR@gmail.com
 * 所有文档必须具有linux基础知识
 * 文档不定期更新
 * 2016.11.21添加lvs+keepalived
