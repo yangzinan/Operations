@@ -130,7 +130,7 @@ ADMIN_TOKEN=$(openssl rand -hex 10)
 ```shell
 yum install -y openstack-keystone httpd mod_wsgi
 ```
-## 3.4配置tuken
+## 3.4配置token
 ```shell
 openstack-config --set /etc/keystone/keystone.conf DEFAULT admin_token $ADMIN_TOKEN
 openstack-config --set /etc/keystone/keystone.conf token provider fernet
@@ -427,7 +427,7 @@ openstack endpoint create --region RegionOne compute public http://controller:87
 openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1/%\(tenant_id\)s
 openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1/%\(tenant_id\)s
 ```
-### 5.1.6a安装nova
+### 5.1.6安装nova
 ```shell
 yum install openstack-nova-api openstack-nova-conductor \
   openstack-nova-console openstack-nova-novncproxy \
