@@ -988,3 +988,83 @@ openstack-config --set /etc/neutron/cinder/cinder.conf DEFAULT enabled_backends 
 systemctl enable openstack-cinder-volume.service target.service
 systemctl start openstack-cinder-volume.service target.service
 ```
+# 九、dashboard操作
+## 9.1登录
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/01.png?raw=true)
+
+## 9.2创建网络
+
+### 9.2.1创建网络
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/02.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/03.png?raw=true)
+
+### 9.2.2创建子网
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/04.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/05.png?raw=true)
+
+## 9.3创建路由
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/06.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/07.png?raw=true)
+
+## 9.4路由连接网络
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/08.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/09.png?raw=true)
+
+## 9.5清空默认网络规则并先暂时允许所有
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/10.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/11.png?raw=true)
+
+## 9.6创建云主机
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/12.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/13.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/14.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/15.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/16.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/17.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/18.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/19.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/20.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/21.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/22.png?raw=true)
+
+## 9.7创建云硬盘
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/23.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/24.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/25.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/26.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/27.png?raw=true)
+
+## 9.8格式化并挂载
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/28.png?raw=true)
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/29.png?raw=true)
+
+
