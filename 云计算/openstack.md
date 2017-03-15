@@ -57,14 +57,22 @@ source /etc/profile
 ```shell
 yum install -y mariadb mariadb-server MySQL-python
 ```
-```conf
+```shell
+cat>>/etc/my.cnf<<EOF
+[client-server]
 [mysqld]
+symbolic-links=0
 bind-address = 0.0.0.0
 default-storage-engine = innodb
 innodb_file_per_table
 collation-server = utf8_general_ci
 init-connect = 'SET NAMES utf8'
 character-set-server = utf8
+max_connections=1000
+!includedir /etc/my.cnf.d
+EOF
+openstack-config --set /usr/lib/systemd/system/mariadb.service Service LimitNOFILE 10000
+openstack-config --set /usr/lib/systemd/system/mariadb.service Service LimitNPROC 10000
 ```
 ### 2.1.2启动mysql
 ```shell
@@ -81,9 +89,9 @@ mysqladmin -uroot password "openstack"
 yum install -y mongodb-server mongodb
 ```
 ### 2.2.2配置mongod（/etc/mongod.conf ）
-```conf
-bind_ip = 0.0.0.0
-smallfiles = true
+```shell
+sed -i "s#bind_ip = 127.0.0.1#bind_ip = 0.0.0.0#g" /etc/mongod.conf
+sed -i "s@#smallfiles = true@smallfiles = true@g" /etc/mongod.conf
 ```
 ### 2.2.3启动mongodb
 ```shell
@@ -150,7 +158,7 @@ keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
 ## 3.8配置apache
 ### 3.8.1配置servername
 ```conf
-ServerName controller
+sed -i "s@#ServerName www.example.com:80@ServerName controller@g" /etc/httpd/conf/httpd.conf 
 ```
 ### 3.8.2配置keystone配置文件
 ```shell
@@ -429,7 +437,7 @@ openstack endpoint create --region RegionOne compute admin http://controller:877
 ```
 ### 5.1.6安装nova
 ```shell
-yum install openstack-nova-api openstack-nova-conductor \
+yum install -y openstack-nova-api openstack-nova-conductor \
   openstack-nova-console openstack-nova-novncproxy \
   openstack-nova-scheduler
 ```
@@ -881,7 +889,7 @@ yum install -y openstack-cinder
 ```
 ### 8.1.7配置数据库
 ```shell
-openstack-config --set /etc/cinder/cinder.conf database connection = mysql+pymysql://cinder:openstack@controller/cinder
+openstack-config --set /etc/cinder/cinder.conf database connection mysql+pymysql://cinder:openstack@controller/cinder
 ```
 ### 8.1.8配置rabbitmq
 ```shell
@@ -901,12 +909,12 @@ openstack-config --set /etc/cinder/cinder.conf keystone_authtoken project_domain
 openstack-config --set /etc/cinder/cinder.conf keystone_authtoken user_domain_name default
 openstack-config --set /etc/cinder/cinder.conf keystone_authtoken project_name service
 openstack-config --set /etc/cinder/cinder.conf keystone_authtoken username cinder
-openstack-config --set /etc/neutron/cinder/cinder.conf keystone_authtoken password cinder
+openstack-config --set /etc/cinder/cinder.conf keystone_authtoken password cinder
 ```
 ### 8.1.10配置ip和锁路径
 ```shell
-openstack-config --set /etc/neutron/cinder/cinder.conf DEFAULT my_ip 10.0.20.30
-openstack-config --set /etc/neutron/cinder/cinder.conf oslo_concurrency lock_path /var/lib/cinder/tmp
+openstack-config --set /etc/cinder/cinder.conf DEFAULT my_ip 10.0.10.10
+openstack-config --set /etc/cinder/cinder.conf oslo_concurrency lock_path /var/lib/cinder/tmp
 ```
 ### 8.1.11初始化数据库
 ```shell
@@ -914,7 +922,7 @@ su -s /bin/sh -c "cinder-manage db sync" cinder
 ```
 ### 8.1.12配置nova使用cinder
 ```shell
-penstack-config --set /etc/neutron/nova/nova.conf cinder os_region_name RegionOne
+penstack-config --set /etc/nova/nova.conf cinder os_region_name RegionOne
 ```
 ### 8.1.13重启nova-api
 ```shell
@@ -968,22 +976,26 @@ openstack-config --set /etc/cinder/cinder.conf keystone_authtoken project_domain
 openstack-config --set /etc/cinder/cinder.conf keystone_authtoken user_domain_name default
 openstack-config --set /etc/cinder/cinder.conf keystone_authtoken project_name service
 openstack-config --set /etc/cinder/cinder.conf keystone_authtoken username cinder
-openstack-config --set /etc/neutron/cinder/cinder.conf keystone_authtoken password cinder
+openstack-config --set /etc//cinder/cinder.conf keystone_authtoken password cinder
 ```
 ### 8.2.7配置ip和锁路径
 ```shell
-openstack-config --set /etc/neutron/cinder/cinder.conf DEFAULT my_ip 10.0.20.30
-openstack-config --set /etc/neutron/cinder/cinder.conf oslo_concurrency lock_path /var/lib/cinder/tmp
+openstack-config --set /etc//cinder/cinder.conf DEFAULT my_ip 10.0.10.30
+openstack-config --set /etc//cinder/cinder.conf oslo_concurrency lock_path /var/lib/cinder/tmp
 ```
 ### 8.2.8配置cinder使用lvm
 ```shell
-openstack-config --set /etc/neutron/cinder/cinder.conf lvm volume_driver cinder.volume.drivers.lvm.LVMVolumeDriver
-openstack-config --set /etc/neutron/cinder/cinder.conf lvm volume_group cinder-volumes
-openstack-config --set /etc/neutron/cinder/cinder.conf lvm iscsi_protocol iscsi
-openstack-config --set /etc/neutron/cinder/cinder.conf lvm iscsi_helper lioadm
-openstack-config --set /etc/neutron/cinder/cinder.conf DEFAULT enabled_backends lvm
+openstack-config --set /etc/cinder/cinder.conf lvm volume_driver cinder.volume.drivers.lvm.LVMVolumeDriver
+openstack-config --set /etc/cinder/cinder.conf lvm volume_group cinder-volumes
+openstack-config --set /etc/cinder/cinder.conf lvm iscsi_protocol iscsi
+openstack-config --set /etc/cinder/cinder.conf lvm iscsi_helper lioadm
+openstack-config --set /etc/cinder/cinder.conf DEFAULT enabled_backends lvm
 ```
-### 8.2.9启动cinder
+### 8.2.9配置数据库
+```shell
+openstack-config --set /etc/cinder/cinder.conf database connection mysql+pymysql://cinder:openstack@controller/cinder
+```
+### 8.2.10启动cinder
 ```shell
 systemctl enable openstack-cinder-volume.service target.service
 systemctl start openstack-cinder-volume.service target.service
