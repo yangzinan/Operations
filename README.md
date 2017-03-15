@@ -10,4 +10,5 @@
 * 2016.12.1添加Hadoop（完全分布式）
 * 2017.03.09添加openstack（未完成）
 * 2017.03.13完成openstack部署部分
+* 2017.03.15完成openstack
 * 近期更新计划 基础类：nginx，haproxy，heartbeat。存储：nfs，drbd，MFS，glusterFS，ceph，fastdfs。云计算：openstack，cloudstack。容器：docker
