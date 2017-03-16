@@ -911,9 +911,8 @@ openstack-config --set /etc/cinder/cinder.conf keystone_authtoken project_name s
 openstack-config --set /etc/cinder/cinder.conf keystone_authtoken username cinder
 openstack-config --set /etc/cinder/cinder.conf keystone_authtoken password cinder
 ```
-### 8.1.10配置ip和锁路径
+### 8.1.10锁路径
 ```shell
-openstack-config --set /etc/cinder/cinder.conf DEFAULT my_ip 10.0.10.10
 openstack-config --set /etc/cinder/cinder.conf oslo_concurrency lock_path /var/lib/cinder/tmp
 ```
 ### 8.1.11初始化数据库
@@ -980,7 +979,7 @@ openstack-config --set /etc//cinder/cinder.conf keystone_authtoken password cind
 ```
 ### 8.2.7配置ip和锁路径
 ```shell
-openstack-config --set /etc//cinder/cinder.conf DEFAULT my_ip 10.0.10.30
+openstack-config --set /etc//cinder/cinder.conf DEFAULT my_ip 10.0.20.30
 openstack-config --set /etc//cinder/cinder.conf oslo_concurrency lock_path /var/lib/cinder/tmp
 ```
 ### 8.2.8配置cinder使用lvm
@@ -1080,3 +1079,4 @@ systemctl start openstack-cinder-volume.service target.service
 ![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/openstack/29.png?raw=true)
 
 
+xf
