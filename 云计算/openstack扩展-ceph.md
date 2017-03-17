@@ -73,6 +73,8 @@ mkfs.xfs /dev/sdb
 mkdir -p /ceph/osd/osd-01
 echo "/dev/sdb    /ceph/osd/osd-01    xfs    defaults    0 0" >> /etc/fstab
 mount -a
+useradd  ceph
+chown -R ceph.ceph /ceph
 ```
 ## 3.7初始化osd节点并激活osd
 ```shell
