@@ -11,4 +11,4 @@
 * 2017.03.09添加openstack（未完成）
 * 2017.03.13完成openstack部署部分
 * 2017.03.15完成openstack
-* 近期更新计划 基础类：nginx，haproxy，heartbeat。存储：nfs，drbd，MFS，glusterFS，ceph，fastdfs。云计算：openstack(已完成)，cloudstack。容器：docker
+* 近期更新计划 基础类：nginx，haproxy，heartbeat。存储：nfs，drbd，MFS，glusterFS，ceph(已完成集成到openstack-扩展)，fastdfs。云计算：openstack(已完成)，cloudstack。容器：docker

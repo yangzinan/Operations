@@ -840,6 +840,9 @@ sed -i "s@#OPENSTACK_API_VERSIONS@OPENSTACK_API_VERSIONS@g" /etc/openstack-dashb
 sed -i "s@#    \"identity\": 3,@    \"identity\": 3,@g" /etc/openstack-dashboard/local_settings
 sed -i "s@#    \"volume\": 2@    \"volume\": 2@g" /etc/openstack-dashboard/local_settings
 sed -i "s@#    \"compute\": 2,@    \"compute\": 2,@g" /etc/openstack-dashboard/local_settings
+sed -i "133s@#@@g" /etc/openstack-dashboard/local_settings
+sed -i "132s@#@@g" /etc/openstack-dashboard/local_settings
+sed -i "60s@#@@g" /etc/openstack-dashboard/local_settings
 ```
 ### 7.3重启apache
 ```shell
@@ -851,7 +854,7 @@ systemctl restart httpd
 ```
 mysql -uroot -popenstack -e"CREATE DATABASE cinder;"
 mysql -uroot -popenstack -e"GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'controller' \
-  IDENTIFIED BY 'openstack';:
+  IDENTIFIED BY 'openstack';"
 mysql -uroot -popenstack -e"GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'%' \
   IDENTIFIED BY 'openstack';"
 ```
