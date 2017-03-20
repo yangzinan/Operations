@@ -59,7 +59,7 @@ ceph-deploy new controller compute cinder
 ceph-deploy install controller compute cinder
 #注：使用ceph-deploy安装还是会使用国外yum，如果网速不够就在每个节点使用：yum -y install ceph ceph-radosgw 安装
 ```
-## 3.4穿件一个监视集群
+## 3.4创建一个监视集群
 ```shell
 ceph-deploy mon create controller compute cinder
 ```
