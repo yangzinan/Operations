@@ -1,0 +1,29 @@
+yum install -y wget
+mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.back
+wget http://mirrors.aliyun.com/repo/Centos-7.repo  -P /etc/yum.repos.d/
+mv /etc/yum.repos.d/Centos-7.repo /etc/yum.repos.d/CentOS-Base.repo
+yum install -y epel-release 
+yum install -y centos-release-openstack-mitaka
+sed -i "s@#baseurl@baseurl@g" /etc/yum.repos.d/epel.repo
+sed -i "s@mirrorlist@#mirrorlist@g"  /etc/yum.repos.d/epel.repo
+sed -i "s#http://download.fedoraproject.org/pub#https://mirrors.tuna.tsinghua.edu.cn#g" /etc/yum.repos.d/epel.repo
+sed -i "s#http://elrepo.org/linux#https://mirror.tuna.tsinghua.edu.cn/elrepo#g" /etc/yum.repos.d/elrepo.repo
+sed -i "s#mirror.centos.org#mirrors.163.com#g" /etc/yum.repos.d/CentOS-OpenStack-mitaka.repo 
+yum clean all
+yum makecache
+yum install -y tree lrzsz nmap python-pip vim net-tools ntp iperf iftop screen zip unzip gcc gcc-c++ cmake
+yum install -y python-openstackclient openstack-selinux ntp openstack-utils
+yum install -y mariadb mariadb-server MySQL-python
+yum install -y mongodb-server mongodb
+yum install -y rabbitmq-server
+yum install -y memcached python-memcached
+yum install -y openstack-keystone httpd mod_wsgi
+yum install -y openstack-glance
+yum install -y openstack-nova-api openstack-nova-conductor \
+yum install -y openstack-nova-compute
+yum install -y openstack-neutron openstack-neutron-ml2 openstack-neutron-linuxbridge ebtables
+yum install -y openstack-neutron-linuxbridge ebtables ipset
+yum install openstack-dashboard -y
+yum install -y openstack-cinder
+yum install lvm2 -y
+yum install openstack-cinder targetcli python-keystone -y

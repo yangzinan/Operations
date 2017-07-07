@@ -606,7 +606,7 @@ sed -i "s#export JAVA_HOME=\${JAVA_HOME}#export JAVA_HOME=$JAVA_HOME#g" /usr/loc
 <!-- Put site-specific property overrides in this file. -->
 
 <configuration>
-	<!-- 指定hdfs的nameservice为ns1 --></configuration>
+	<!-- 指定hdfs的nameservice为ns1 -->
 	<property>
 		<name>fs.defaultFS</name>
 		<value>hdfs://ns1</value>
@@ -969,7 +969,7 @@ SHUTDOWN_MSG: Shutting down NameNode at node1/192.168.241.10
 ```
 #### 2.5.4将/usr/local/hadoop/tmp拷贝到node2的/usr/local/hadoop下
 ```shell
-scp -r /usr/local/hadoop/tmp node0:/usr/local/hadoop/
+scp -r /usr/local/hadoop/tmp node2:/usr/local/hadoop/
 ```
 #### 2.5.5格式化zk
 ```shell
