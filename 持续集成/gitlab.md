@@ -8,7 +8,9 @@ service postfix start
 chkconfig postfix on
 ```
 # 3.安装gitlab
-
+```shell
+yum -y localinstall gitlab-ce-8.8.8-ce.0.el6.x86_64.rpm
+```
 # 4.配置(/etc/gitlab/gitlab.rb)
 ```conf
 #配置gitlab的ip或域名
