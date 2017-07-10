@@ -12,7 +12,7 @@ chkconfig postfix on
 # 4.配置(/etc/gitlab/gitlab.rb)
 ```conf
 #配置gitlab的ip或域名
-external_url 'http://47.92.113.93'
+external_url 'http://10.0.10.55'
 ###配置邮箱###################################
 gitlab_rails['time_zone'] = 'Asia/Shanghai'
 gitlab_rails['gitlab_email_enabled'] = true
