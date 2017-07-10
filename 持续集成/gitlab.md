@@ -47,4 +47,8 @@ gitlab-ctl reconfigure
 cd /opt/gitlab/embedded/service/gitlab-rails
 gitlab-ctl stop
 git apply ~/8.8.diff
-``
+```
+
+# 7.登录修改密码
+
+![iamge](https://github.com/yangzinan/Operations/blob/master/iamge/cxjc/11.png?raw=true)
