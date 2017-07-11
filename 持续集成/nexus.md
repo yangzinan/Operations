@@ -48,8 +48,7 @@ chown -R nexus:nexus /usr/local/nexus
 * hosted：主要用于内部项目的发布仓库或第三方的项目构件
 * proxy：公共远程仓库的代理
 * virtual：虚拟仓库
-* 
-**一般用到的仓库种类是 hosted、proxy**
+* **一般用到的仓库种类是 hosted、proxy**
 
 ### 5.2Hosted说明
 
