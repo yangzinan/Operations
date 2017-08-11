@@ -12,4 +12,5 @@
 * 2017.03.13完成openstack部署部分
 * 2017.03.15完成openstack
 * 2017.03.25添加openstack linux_bridge高可用
+* 2.17.8.11 开始添加Nginx
 * 近期更新计划 基础类：nginx，haproxy，heartbeat。存储：nfs，drbd，MFS，glusterFS，ceph(已完成集成到openstack-扩展)，fastdfs。云计算：openstack(已完成)，cloudstack。容器：docker
