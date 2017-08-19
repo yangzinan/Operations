@@ -676,7 +676,7 @@ php-fpm 57803 nginx    0u  IPv4 183139      0t0  TCP localhost:cslistener (LISTE
 php-fpm 57804 nginx    0u  IPv4 183139      0t0  TCP localhost:cslistener (LISTEN)
 root@template /usr/local/src/php-5.5.20 12:37:50 #
 ```
-##9.8配置nginx支持php
+## 9.8配置nginx支持php
 * 在一个server标签下添加如下
 ```conf
 location ~ .*\.(php|php5)?$ {  
