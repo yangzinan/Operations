@@ -209,7 +209,7 @@ vrrp_instance VI_1 {
  	}
   
  	virtual_ipaddress {
- 		192.168.18.200
+ 		192.168.18.200/24 dev eth0 label eth0:1
     #虚拟路由器的地址（ ifconfig eth网卡号:编号 VIP netmask 255.255.255.0 up就是这个虚拟ip）
  	}
 }
