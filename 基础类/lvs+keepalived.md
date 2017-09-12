@@ -190,8 +190,14 @@ vrrp_instance VI_1 {
 	state MASTER  #MASTER 是主 BACKUP是从
 	interface eth0  #网络接口（需要绑定VIP的网卡）
 	virtual_router_id 51  #配置实例的表示，在同一个配置文件中每个实例的标识是唯一的，被节点的要和主节点的一致
-	priority 100  #优先级数值越大优先级越高一般同一个实例中主比从大100
+	riority 100  #优先级数值越大优先级越高一般同一个实例中主比从大100
  	advert_int 1  #同步检查的时间间隔
+	mcast_src_ip  192.168.18.11 #发送多播包的地址，如果不设置默认使用绑定网卡的primary ip
+   
+  track_interface{ #设置额外的监控，里面那个网卡出现问题都会切换
+    eth0
+    eth1
+   }
 
   track_script {
         nginx_check  #使用监控脚本
