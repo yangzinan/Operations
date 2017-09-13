@@ -171,19 +171,19 @@ chkconfig --add keepalived
 ```conf
 global_defs {
 	notification_email {
-	znyang@vip.qq.com
-  }
+		znyang@vip.qq.com
+	}
 
-  notification_email_from Alexandre.Cassen@firewall.loc
+	notification_email_from Alexandre.Cassen@firewall.loc
 	smtp_server 127.0.0.1
 	smtp_connect_timeout 30
 	router_id LVS_1  #这行是keepalived服务器ID在同一个局域网内一定不能重复
 }
 
 vrrp_script nginx_check {   #配置监控脚本
-  script "/root/nginx_check.sh"   #监控脚本
-  interval 1    ###检测时间间隔 1s###
-  weigh -60   ###如果条件成立（脚本返回非0），权重-60###
+	script "/root/nginx_check.sh"   #监控脚本
+	interval 1    ###检测时间间隔 1s###
+	weigh -60   ###如果条件成立（脚本返回非0），权重-60###
 }
  
 vrrp_instance VI_1 {
@@ -194,55 +194,55 @@ vrrp_instance VI_1 {
  	advert_int 1  #同步检查的时间间隔
 	mcast_src_ip  192.168.18.11 #发送多播包的地址，如果不设置默认使用绑定网卡的primary ip
    
-  track_interface{ #设置额外的监控，里面那个网卡出现问题都会切换
-    eth0
-    eth1
-   }
-
-  track_script {
-        nginx_check  #使用监控脚本
-  }
+	track_interface{ #设置额外的监控，里面那个网卡出现问题都会切换
+		eth0
+		eth1
+	}
+	
+	track_script {
+		nginx_check  #使用监控脚本
+	}
 
  	authentication {
- 	  auth_type PASS  #权限类型是密码
- 	  auth_pass 1111  #密码
+		auth_type PASS  #权限类型是密码
+		auth_pass 1111  #密码
  	}
   
  	virtual_ipaddress {
  		192.168.18.200/24 dev eth0 label eth0:1
-    #虚拟路由器的地址（ ifconfig eth网卡号:编号 VIP netmask 255.255.255.0 up就是这个虚拟ip）
+		#虚拟路由器的地址（ ifconfig eth网卡号:编号 VIP netmask 255.255.255.0 up就是这个虚拟ip）
  	}
 }
 
 ##################若只做VIP切换则不需要下面的转发配置###########################################
 
 virtual_server 192.168.18.200 8080 {  #配置虚拟主机
-    delay_loop 6
-    lb_algo wrr
-    lb_kind DR
-    nat_mask 255.255.255.0
-    persistence_timeout 50
-    protocol TCP
+	delay_loop 6
+	lb_algo wrr
+	lb_kind DR
+	nat_mask 255.255.255.0
+	persistence_timeout 50
+	protocol TCP
 
-    real_server 192.168.18.203 8080 { #第一个RS
-        weight 1
-        TCP_CHECK {
-            connect_timeout 8
-            nb_get_retry 3
-            delay_before_retry 3
-            connect_port 8080  #健康检查的端口
-        }
-    }
+	real_server 192.168.18.203 8080 { #第一个RS
+		weight 1
+		TCP_CHECK {
+			connect_timeout 8
+			nb_get_retry 3
+			delay_before_retry 3
+			connect_port 8080  #健康检查的端口
+		}
+	}
 
-    real_server 192.168.18.204 8080 {  #第二个RS
-        weight 1
-        TCP_CHECK {
-          connect_timeout 8
-          nb_get_retry 3
-          delay_before_retry 3
-          connect_port 8080  #健康检查的端口
-     }
-  }
+	real_server 192.168.18.204 8080 {  #第二个RS
+		weight 1
+		TCP_CHECK {
+			connect_timeout 8
+			nb_get_retry 3
+			delay_before_retry 3
+			connect_port 8080  #健康检查的端口
+		}
+	}
 }
 ```
 ## 九.生产实例
