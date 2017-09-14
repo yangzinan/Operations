@@ -31,7 +31,8 @@
 	
 	15.codis-proxy 与 codis-dashbaord 支持 docker 部署
 ### 1.2codis拓扑
-![image] (https://github.com/CodisLabs/codis/raw/release3.2/doc/pictures/architecture.png)
+
+![architecture](https://user-images.githubusercontent.com/12201941/30414861-2814c6a4-9958-11e7-8332-c723147dd72f.png)
 
 ### 1.3codis3.x组件介绍
 	1.Codis Server：基于 redis-3.2.8 分支开发。增加了额外的数据结构，以支持 slot 有关的操作以及数据迁移指令。具体的修改可以参考文档 redis 的修改。
@@ -802,3 +803,25 @@ ln -s /usr/local/codis3.2.0-go1.7.5-linux/ /usr/local/codis
 ```shell
 nohup /usr/local/codis/codis-proxy --ncpu=1 --config=/usr/local/codis/conf/proxy.conf --log=/var/log/codis/proxy.log --log-level=WARN &
 ```
+### 四、web界面（ip:18090）
+* 基本信息
+
+<img width="1753" alt="0" src="https://user-images.githubusercontent.com/12201941/30414637-28096134-9957-11e7-85dc-03373bfcd3ef.png">
+
+* 添加proxy
+
+<img width="1764" alt="1" src="https://user-images.githubusercontent.com/12201941/30414685-5bad7138-9957-11e7-8809-f2395f5a1d33.png">
+
+* 修改槽位
+
+<img width="1773" alt="4" src="https://user-images.githubusercontent.com/12201941/30414781-befcaa7e-9957-11e7-9ba1-fb15b422bb1e.png">
+
+
+* 添加组合主机
+
+<img width="1798" alt="2" src="https://user-images.githubusercontent.com/12201941/30414726-86d26832-9957-11e7-803c-c56f31fda762.png">
+
+* 添加sentinel
+
+<img width="1114" alt="3" src="https://user-images.githubusercontent.com/12201941/30414811-e4dde064-9957-11e7-964b-cd0cf2bb11ba.png">
+
