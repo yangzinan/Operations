@@ -797,11 +797,11 @@ ln -s /usr/local/codis3.2.0-go1.7.5-linux/ /usr/local/codis
 ```
 #### 3.6.2生成配置文件
 ```shell
-/usr/local/codis/codis-dashboard --default-config | tee /usr/local/codis/conf/dashboard.conf
+/usr/local/codis/codis-admin --dashboard-list --zookeeper=codis01:2181 | tee /usr/local/codis/conf/codis.json
 ```
 #### 3.6.3启动
 ```shell
-nohup /usr/local/codis/codis-proxy --ncpu=1 --config=/usr/local/codis/conf/proxy.conf --log=/var/log/codis/proxy.log --log-level=WARN &
+nohup /usr/local/codis/codis-fe --ncpu=1 --log=/var/log/codis --log-level=WARN --dashboard-list=/usr/local/codis/conf/codis.json --listen=0.0.0.0:18090 &
 ```
 ### 四、web界面（ip:18090）
 * 基本信息
