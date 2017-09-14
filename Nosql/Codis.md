@@ -197,7 +197,6 @@ appendonly no
 appendfsync everysec 
 no-appendfsync-on-rewrite yes 
 auto-aof-rewrite-percentage 100 
-auto-aof-rewrite-min-size 64mblua-time-limit 5000 
 slowlog-log-slower-than 10000 
 slowlog-max-len 128 
 hash-max-ziplist-entries 512 
@@ -245,7 +244,6 @@ appendonly no
 appendfsync everysec 
 no-appendfsync-on-rewrite yes 
 auto-aof-rewrite-percentage 100 
-auto-aof-rewrite-min-size 64mblua-time-limit 5000 
 slowlog-log-slower-than 10000 
 slowlog-max-len 128 
 hash-max-ziplist-entries 512 
