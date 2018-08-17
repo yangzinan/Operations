@@ -813,6 +813,9 @@ ExecStart=/opt/kubernetes/bin/kubelet \
   --log-dir=/opt/kubernetes/log
 Restart=on-failure
 RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
 EOF
 ```
 
